@@ -10,20 +10,24 @@ PORT = 27017
 
 def main():
     try:
+        # connecting to db
         client = MongoClient(IP, PORT)
-        # getting database of project
         db = client.RAS_DB
+
+        # loading data
+        print("loading journal names collection...")
+        namesLoad(db)
+        print("loading subject area collection...")
+        # subjectAreaLoad(db)
+
+        # closing connection
+        client.close()
     except ServerSelectionTimeoutError as e:
         print(e)
         exit(TimeoutError)
     except Exception as e:
         print(e)
         exit(-1)
-
-    print("loading journal names collection...")
-    namesLoad(db)
-    print("loading subject area collection...")
-    # subjectAreaLoad(db)
 
 
 if __name__ == '__main__':
