@@ -13,9 +13,7 @@ def get_info():
         pickle.dump(df['Source Title (Medline-sourced journals are indicated in Green)'].values, fp)
 
 
-def enter_data_to_DB(ip='localhost', port=27017):
-    client = MongoClient(ip, port)
-    db = client.RAS_DB
+def load_data_to_DB(db):
     journals_collection = db.Journal_names
 
     # getting list of names from journal_list file
@@ -29,6 +27,3 @@ def enter_data_to_DB(ip='localhost', port=27017):
     journals_collection.insert_many(list_of_documents)
 
 
-if __name__ == "__main__":
-    # get_info()
-    enter_data_to_DB()
