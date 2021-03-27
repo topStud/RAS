@@ -1,24 +1,34 @@
 import pickle
+from pandas import read_excel
+from pymongo import MongoClient
 
 
 def get_info():
-    file = open("scopus-journal-list-download.csv", 'r', encoding='cp1252')
-    data = file.readlines()
+    df = read_excel('scopus-journal-list-download.xlsx', engine='openpyxl')
+    unwonted_rows = [11, 12, 40803]
+    df.drop(df.index[unwonted_rows], inplace=True)
 
-    journals_list = []
-    for i, line in enumerate(data):
-        split_line = line.split(',')
-        # information begins at 40th row
-        if 39 <= i:
-            if i == 51 or i == 50:
-                continue
-            print(i, split_line[1])
-            # 1- Journal title
-            journals_list.append(split_line[1])
-
+    # save to file
     with open('journal_list', 'wb') as fp:
-        pickle.dump(journals_list, fp)
+        pickle.dump(df['Source Title (Medline-sourced journals are indicated in Green)'].values, fp)
+
+
+def enter_data_to_DB(ip='localhost', port=27017):
+    client = MongoClient(ip, port)
+    db = client.RAS_DB
+    journals_collection = db.Journal_names
+
+    # getting list of names from journal_list file
+    with open('journal_list', 'rb') as fp:
+        journals_list = pickle.load(fp)
+
+    # go over list
+    list_of_documents = []
+    for item in journals_list:
+        list_of_documents.append({"name": item})
+    journals_collection.insert_many(list_of_documents)
 
 
 if __name__ == "__main__":
-    get_info()
+    # get_info()
+    enter_data_to_DB()

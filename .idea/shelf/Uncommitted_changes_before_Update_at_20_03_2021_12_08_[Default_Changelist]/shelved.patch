@@ -1,0 +1,1024 @@
+Index: venv/Lib/site-packages/pyscopus/APIURI.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus/APIURI.py b/venv/Lib/site-packages/pyscopus/APIURI.py
+new file mode 100644
+--- /dev/null	(date 1616234756507)
++++ b/venv/Lib/site-packages/pyscopus/APIURI.py	(date 1616234756507)
+@@ -0,0 +1,8 @@
++SEARCH = "http://api.elsevier.com/content/search/scopus"
++SEARCH_AUTHOR = "http://api.elsevier.com/content/search/author"
++AUTHOR = "http://api.elsevier.com/content/author/author_id"
++ABSTRACT = "http://api.elsevier.com/content/abstract/scopus_id"
++CITATION = "http://api.elsevier.com/content/abstract/citations"
++SERIAL_SEARCH = "https://api.elsevier.com/content/serial/title"
++SERIAL_RETRIEVAL = "https://api.elsevier.com/content/serial/title/issn/"
++AFFL_RETRIEVAL = "https://api.elsevier.com/content/affiliation/affiliation_id/"
+Index: venv/Lib/site-packages/pyscopus-1.0.3.dist-info/WHEEL
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/WHEEL b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/WHEEL
+new file mode 100644
+--- /dev/null	(date 1616234756517)
++++ b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/WHEEL	(date 1616234756517)
+@@ -0,0 +1,5 @@
++Wheel-Version: 1.0
++Generator: bdist_wheel (0.32.3)
++Root-Is-Purelib: true
++Tag: py3-none-any
++
+Index: venv/Lib/site-packages/pyscopus/utils.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus/utils.py b/venv/Lib/site-packages/pyscopus/utils.py
+new file mode 100644
+--- /dev/null	(date 1616234756513)
++++ b/venv/Lib/site-packages/pyscopus/utils.py	(date 1616234756513)
+@@ -0,0 +1,480 @@
++# -*- coding: utf-8 -*-
++'''
++    Helper Functions
++'''
++
++import requests
++import numpy as np
++import pandas as pd
++
++def _parse_aff(js_aff):
++    ''' example: https://dev.elsevier.com/payloads/retrieval/affiliationRetrievalResp.xml'''
++    try:
++        d = {'eid': js_aff['coredata']['eid']}
++    except:
++        d = {'eid': None}
++    ## affiliation-name
++    try:
++        d['affiliation-name'] = js_aff['affiliation-name']
++    except:
++        d['affiliation-name'] = None
++    ## address
++    for add_type in ['address', 'city', 'country']:
++        try:
++            d[add_type] = js_aff[add_type]
++        except:
++            d[add_type] = None
++    ## institution-profile
++    for org_type in ['org-type', 'org-domain', 'org-URL']:
++        try:
++            d[org_type] = js_aff['institution-profile'][org_type]
++        except:
++            d[org_type] = None
++    date_entry = js_aff['institution-profile']['date-created']
++    try:
++        d['date-created'] = '{}/{}/{}'.format(*[date_entry[k] for k in sorted(date_entry)])
++    except:
++        d['date-created'] = None
++    return d
++
++
++def _parse_serial_citescore(serial_entry_citescore):
++    citescore_df = list()
++    subjectrank_df = list()
++    for citescore_d in serial_entry_citescore:
++        d = {'year': citescore_d['@year'],
++             'status': citescore_d['@status'],
++            }
++        info_d = citescore_d['citeScoreInformationList'][0]['citeScoreInfo'][0]
++        d.update({k: v for k, v in info_d.items() if k!='@_fa' and k!='citeScoreSubjectRank'})
++        citescore_df.append(d)
++        sj_df = pd.DataFrame(info_d['citeScoreSubjectRank'])
++        sj_df['year'] = d['year']
++        subjectrank_df.append(sj_df)
++    citescore_df = pd.DataFrame(citescore_df)
++    subjectrank_df = pd.concat(subjectrank_df, ignore_index=True)
++    subjectrank_df.drop(columns=['@_fa'], inplace=True)
++    return citescore_df, subjectrank_df
++
++def _parse_serial_entry(serial_entry):
++    keys_not_wanted = ['SNIPList', 'SJRList', 'prism:url', 'link', '@_fa']
++    entry_meta = {k: v for k, v in serial_entry.items()\
++                  if k not in keys_not_wanted and 'citescore' not in k.lower()}
++    entry_meta['subject-area'] = [sj['@code'] for sj in entry_meta['subject-area']]
++    try:
++        entry_citescore = serial_entry['citeScoreYearInfoList']['citeScoreYearInfo']
++        entry_cs_df, entry_sj_df = _parse_serial_citescore(entry_citescore)
++        entry_cs_df['source-id'] = entry_meta['source-id']
++        entry_sj_df['source-id'] = entry_meta['source-id']
++        entry_cs_df['prism:issn'] = entry_meta['prism:issn']
++        entry_sj_df['prism:issn'] = entry_meta['prism:issn']
++    except:
++        ## if citescore not found, return empty dataframe
++        entry_cs_df, entry_sj_df = pd.DataFrame(), pd.DataFrame()
++    return entry_meta, entry_cs_df, entry_sj_df
++
++def _parse_serial(serial_json):
++    meta_df = list()
++    cs_df = list()
++    sj_df = list()
++    collected_source_id_list = list()
++    for entry in serial_json['serial-metadata-response']['entry']:
++        entry_meta, entry_cs_df, entry_sj_df = _parse_serial_entry(entry)
++        if entry_meta['source-id'] in collected_source_id_list:
++            continue
++        collected_source_id_list.append(entry_meta['source-id'])
++        meta_df.append(entry_meta)
++        cs_df.append(entry_cs_df)
++        sj_df.append(entry_sj_df)
++    meta_df = pd.DataFrame(meta_df)
++    cs_df = pd.concat(cs_df, ignore_index=True)
++    sj_df = pd.concat(sj_df, ignore_index=True)
++    return meta_df, cs_df, sj_df
++
++from pyscopus import APIURI
++
++def _parse_citation(js_citation, year_range):
++    resp = js_citation['abstract-citations-response']
++    cite_info_list = resp['citeInfoMatrix']['citeInfoMatrixXML']['citationMatrix']['citeInfo']
++
++    year_range = (year_range[0], year_range[1]+1)
++    columns = ['scopus_id', 'previous_citation'] + [str(yr) for yr in range(*year_range)] + ['later_citation', 'total_citation']
++    citation_df = pd.DataFrame(columns=columns)
++
++    year_arr = np.arange(year_range[0], year_range[1]+1)
++    for cite_info in cite_info_list:
++        cite_dict = {}
++        # dc:identifier: scopus id
++        cite_dict['scopus_id'] = cite_info['dc:identifier'].split(':')[-1]
++        # pcc: previous citation counts
++        try:
++            cite_dict['previous_citation'] = cite_info['pcc']
++        except:
++            cite_dict['previous_citation'] = pd.np.NaN
++        # cc: citation counts during year range
++        try:
++            cc = cite_info['cc']
++        except:
++            return pd.DataFrame()
++        for index in range(len(cc)):
++            year = str(year_arr[index])
++            cite_dict[year] = cc[index]['$']
++        # lcc: later citation counts
++        try:
++            cite_dict['later_citation'] = cite_info['lcc']
++        except:
++            cite_dict['later_citation'] = pd.np.NaN
++        # rowTotal: total citation counts
++        try:
++            cite_dict['total_citation'] = cite_info['rowTotal']
++        except:
++            cite_dict['total_citation'] = pd.np.NaN
++        citation_df = citation_df.append(cite_dict, ignore_index=True)
++
++    return citation_df[columns]
++
++def _parse_affiliation(js_affiliation):
++    l = list()
++    for js_affil in js_affiliation:
++        name = js_affil['affilname']
++        city = js_affil['affiliation-city']
++        country = js_affil['affiliation-country']
++        l.append({'name': name, 'city': city, 'country': country})
++    return l
++
++def _parse_author_affiliation(js_affiliation_entry):
++    affiliation_dict = {}
++
++    ip_doc = js_affiliation_entry['ip-doc']
++    try:
++        affiliation_dict['parent-id'] = js_affiliation_entry['@parent']
++    except:
++        affiliation_dict['parent-id'] = None
++
++    try:
++        affiliation_dict['id'] = ip_doc['@id']
++    except:
++        affiliation_dict['id'] = None
++
++    try:
++        affiliation_dict['parent-name'] = ip_doc['parent-preferred-name']
++    except:
++        affiliation_dict['parent-name'] = None
++
++    try:
++        affiliation_dict['name'] = ip_doc['afdispname']
++    except:
++        affiliation_dict['name'] = None
++
++    try:
++        affiliation_dict['address'] = ', '.join(ip_doc['address'].values())
++    except:
++        affiliation_dict['address'] = None
++
++    try:
++        affiliation_dict['url'] = ip_doc['org-URL']
++    except:
++        affiliation_dict['url'] = None
++    return affiliation_dict
++
++def _parse_affiliation_history(js_affiliation_history):
++    columns = ('id', 'name', 'parent-id', 'parent-name', 'url')
++    affiliation_history_df = pd.DataFrame(columns=columns)
++
++    for affiliation in js_affiliation_history:
++        affiliation_history_df = affiliation_history_df.append(\
++                                    _parse_author_affiliation(affiliation), \
++                                    ignore_index=True)
++    return affiliation_history_df
++
++def _parse_author(entry):
++    #print(entry)
++    author_id = entry['dc:identifier'].split(':')[-1]
++    lastname = entry['preferred-name']['surname']
++    firstname = entry['preferred-name']['given-name']
++    doc_count = int(entry['document-count'])
++    # affiliations
++    if 'affiliation-current' in entry:
++        affil = entry['affiliation-current']
++        try:
++            institution_name = affil['affiliation-name']
++        except:
++            institution_name = None
++        try:
++            institution_id = affil['affiliation-id']
++        except:
++            institution_id = None
++    else:
++        institution_name = None
++        institution_id = None
++    #city = affil.find('affiliation-city').text
++    #country = affil.find('affiliation-country').text
++    #affiliation = institution + ', ' + city + ', ' + country
++
++    return pd.Series({'author_id': author_id, 'name': firstname + ' ' + lastname, 'document_count': doc_count,\
++            'affiliation': institution_name, 'affiliation_id': institution_id})
++
++def _parse_article(entry):
++    try:
++        scopus_id = entry['dc:identifier'].split(':')[-1]
++    except:
++        scopus_id = None
++    try:
++        title = entry['dc:title']
++    except:
++        title = None
++    try:
++        publicationname = entry['prism:publicationName']
++    except:
++        publicationname = None
++    try:
++        issn = entry['prism:issn']
++    except:
++        issn = None
++    try:
++        isbn = entry['prism:isbn']
++    except:
++        isbn = None
++    try:
++        eissn = entry['prism:eIssn']
++    except:
++        eissn = None
++    try:
++        volume = entry['prism:volume']
++    except:
++        volume = None
++    try:
++        pagerange = entry['prism:pageRange']
++    except:
++        pagerange = None
++    try:
++        coverdate = entry['prism:coverDate']
++    except:
++        coverdate = None
++    try:
++        doi = entry['prism:doi']
++    except:
++        doi = None
++    try:
++        citationcount = int(entry['citedby-count'])
++    except:
++        citationcount = None
++    try:
++        affiliation = _parse_affiliation(entry['affiliation'])
++    except:
++        affiliation = None
++    try:
++        aggregationtype = entry['prism:aggregationType']
++    except:
++        aggregationtype = None
++    try:
++        sub_dc = entry['subtypeDescription']
++    except:
++        sub_dc = None
++    try:
++        author_entry = entry['author']
++        author_id_list = [auth_entry['authid'] for auth_entry in author_entry]
++    except:
++        author_id_list = list()
++    try:
++        link_list = entry['link']
++        full_text_link = None
++        for link in link_list:
++            if link['@ref'] == 'full-text':
++                full_text_link = link['@href']
++    except:
++        full_text_link = None
++
++    return pd.Series({'scopus_id': scopus_id, 'title': title, 'publication_name':publicationname,\
++            'issn': issn, 'isbn': isbn, 'eissn': eissn, 'volume': volume, 'page_range': pagerange,\
++            'cover_date': coverdate, 'doi': doi,'citation_count': citationcount, 'affiliation': affiliation,\
++            'aggregation_type': aggregationtype, 'subtype_description': sub_dc, 'authors': author_id_list,\
++            'full_text': full_text_link})
++
++def _parse_entry(entry, type_):
++    if type_ == 1 or type_ == 'article':
++        return _parse_article(entry)
++    else:
++        return _parse_author(entry)
++
++def _parse_author_retrieval(author_entry):
++    resp = author_entry['author-retrieval-response'][0]
++
++    # create a dict to store the data
++    author_dict = {}
++
++    # coredata
++    coredata = resp['coredata']
++    author_dict['author-id'] = coredata['dc:identifier'].split(':')[-1]
++    for item in ('eid', 'document-count', 'cited-by-count', 'citation-count'):
++        author_dict[item] = coredata[item]
++
++    # author-profile
++    author_profile = resp['author-profile']
++
++    ## perferred name
++    perferred_name = author_profile['preferred-name']
++    author_dict['name'] = perferred_name['given-name'] + ' ' + perferred_name['surname']
++    author_dict['last'] = perferred_name['surname']
++    author_dict['first'] = perferred_name['given-name']
++    author_dict['indexed-name'] = perferred_name['indexed-name']
++
++    ## publication range
++    author_dict['publication-range'] = tuple(author_profile['publication-range'].values())
++
++    ## affiliation-current
++    author_dict['affiliation-current'] = _parse_author_affiliation(\
++                                         author_profile['affiliation-current']['affiliation'])
++
++    ## journal-history
++    author_dict['journal-history'] = pd.DataFrame(author_profile['journal-history']['journal'])
++
++    ## affiliation-history
++    author_dict['affiliation-history'] = _parse_affiliation_history(\
++                                         author_profile['affiliation-history']['affiliation'])
++
++    return author_dict
++
++def _parse_abstract_retrieval(abstract_entry):
++    resp = abstract_entry['abstracts-retrieval-response']
++
++    # coredata
++    coredata = resp['coredata']
++    # keys to exclude
++    unwanted_keys = ('dc:creator', 'link')
++
++    abstract_dict = {key: coredata[key] for key in coredata.keys()\
++                                        if key not in unwanted_keys}
++    # rename keys
++    abstract_dict['scopus-id'] = abstract_dict.pop('dc:identifier').split(':')[-1]
++    abstract_dict['abstract'] = abstract_dict.pop('dc:description')
++    abstract_dict['title'] = abstract_dict.pop('dc:title')
++
++    return abstract_dict
++
++def _search_scopus(key, query, type_, view, index=0):
++    '''
++        Search Scopus database using key as api key, with query.
++        Search author or articles depending on type_
++
++        Parameters
++        ----------
++        key : string
++            Elsevier api key. Get it here: https://dev.elsevier.com/index.html
++        query : string
++            Search query. See more details here: http://api.elsevier.com/documentation/search/SCOPUSSearchTips.htm
++        type_ : string or int
++            Search type: article or author. Can also be 1 for article, 2 for author.
++        view : string
++            Returned result view (i.e., return fields). Can only be STANDARD for author search.
++        index : int
++            Start index. Will be used in search_scopus_plus function
++
++        Returns
++        -------
++        pandas DataFrame
++    '''
++
++    par = {'apikey': key, 'query': query, 'start': index,
++           'httpAccept': 'application/json', 'view': view}
++    if type_ == 'article' or type_ == 1:
++        r = requests.get(APIURI.SEARCH, params=par)
++    else:
++        par['view'] = 'STANDARD'
++        r = requests.get(APIURI.SEARCH_AUTHOR, params=par)
++
++    js = r.json()
++    #print(r.url)
++    total_count = int(js['search-results']['opensearch:totalResults'])
++    entries = js['search-results']['entry']
++
++    result_df = pd.DataFrame([_parse_entry(entry, type_) for entry in entries])
++
++    if index == 0:
++        return(result_df, total_count)
++    else:
++        return(result_df)
++
++def trunc(s,min_pos=0,max_pos=75,ellipsis=True):
++    """Truncation beautifier function
++    This simple function attempts to intelligently truncate a given string
++    """
++    __author__ = 'Kelvin Wong <www.kelvinwong.ca>'
++    __date__ = '2007-06-22'
++    __version__ = '0.10'
++    __license__ = 'Python http://www.python.org/psf/license/'
++
++    """Return a nicely shortened string if over a set upper limit 
++    (default 75 characters)
++    
++    What is nicely shortened? Consider this line from Orwell's 1984...
++    0---------1---------2---------3---------4---------5---------6---------7---->
++    When we are omnipotent we shall have no more need of science. There will be
++    
++    If the limit is set to 70, a hard truncation would result in...
++    When we are omnipotent we shall have no more need of science. There wi...
++    
++    Truncating to the nearest space might be better...
++    When we are omnipotent we shall have no more need of science. There...
++    
++    The best truncation would be...
++    When we are omnipotent we shall have no more need of science...
++    
++    Therefore, the returned string will be, in priority...
++    
++    1. If the string is less than the limit, just return the whole string
++    2. If the string has a period, return the string from zero to the first
++        period from the right
++    3. If the string has no period, return the string from zero to the first
++        space
++    4. If there is no space or period in the range return a hard truncation
++    
++    In all cases, the string returned will have ellipsis appended unless
++    otherwise specified.
++    
++    Parameters:
++        s = string to be truncated as a String
++        min_pos = minimum character index to return as Integer (returned
++                  string will be at least this long - default 0)
++        max_pos = maximum character index to return as Integer (returned
++                  string will be at most this long - default 75)
++        ellipsis = returned string will have an ellipsis appended to it
++                   before it is returned if this is set as Boolean 
++                   (default is True)
++    Returns:
++        Truncated String
++    Throws:
++        ValueError exception if min_pos > max_pos, indicating improper 
++        configuration
++    Usage:
++    short_string = trunc(some_long_string)
++    or
++    shorter_string = trunc(some_long_string,max_pos=15,ellipsis=False)
++    """
++    # Sentinel value -1 returned by String function rfind
++    NOT_FOUND = -1
++    # Error message for max smaller than min positional error
++    ERR_MAXMIN = 'Minimum position cannot be greater than maximum position'
++    
++    # If the minimum position value is greater than max, throw an exception
++    if max_pos < min_pos:
++        raise ValueError(ERR_MAXMIN)
++    # Change the ellipsis characters here if you want a true ellipsis
++    if ellipsis:
++        suffix = '...'
++    else:
++        suffix = ''
++    # Case 1: Return string if it is shorter (or equal to) than the limit
++    length = len(s)
++    if length <= max_pos:
++        return s + suffix
++    else:
++        # Case 2: Return it to nearest period if possible
++        try:
++            end = s.rindex('.',min_pos,max_pos)
++        except ValueError:
++            # Case 3: Return string to nearest space
++            end = s.rfind(' ',min_pos,max_pos)
++            if end == NOT_FOUND:
++                end = max_pos
++        return s[0:end] + suffix
+Index: venv/Lib/site-packages/pyscopus/scopus.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus/scopus.py b/venv/Lib/site-packages/pyscopus/scopus.py
+new file mode 100644
+--- /dev/null	(date 1616234756511)
++++ b/venv/Lib/site-packages/pyscopus/scopus.py	(date 1616234756511)
+@@ -0,0 +1,304 @@
++# -*- coding: utf-8 -*-
++
++import requests, warnings, os, json
++import numpy as np
++import pandas as pd
++from datetime import date
++from pyscopus import APIURI
++from pyscopus.utils import _parse_author, _parse_author_retrieval,\
++        _parse_affiliation, _parse_entry, _parse_citation,\
++        _parse_abstract_retrieval, trunc,\
++        _search_scopus, _parse_serial, _parse_aff
++
++class Scopus(object):
++    '''
++        Scopus class.
++        For instantiation of scopus objects to retrieve data from scopus.com
++        Refer to http://zhiyzuo.github.com/python-scopus for more information
++        Let me know if there's any issue with this code.
++
++        Happy coding,
++        Zhiya
++        zhiyazuo@gmail.com
++    '''
++
++    def __init__(self, apikey=None):
++        self.apikey = apikey
++
++    def add_key(self, apikey):
++        self.apikey = apikey
++
++    def search(self, query, count=100, type_=1, view='COMPLETE'):
++        '''
++            Search for documents matching the keywords in query
++            Details: http://api.elsevier.com/documentation/SCOPUSSearchAPI.wadl
++            Tips: http://api.elsevier.com/documentation/search/SCOPUSSearchTips.htm
++
++            Parameters
++            ----------------------------------------------------------------------
++            query : str
++                Query style (see above websites).
++            count : int
++                The number of records to be returned.
++            view : string
++                Returned result view (i.e., return fields). Can only be STANDARD for author search.
++
++            Returns
++            ----------------------------------------------------------------------
++            pandas.DataFrame
++               Data frame of search results.
++        '''
++
++
++        if type(count) is not int:
++            raise ValueError("%s is not a valid input for the number of entries to return." %number)
++
++        result_df, total_count = _search_scopus(self.apikey, query, type_, view=view)
++
++        if total_count <= count:
++            count = total_count
++
++        if count <= 25:
++            # if less than 25, just one page of response is enough
++            return result_df[:count]
++
++        # if larger than, go to next few pages until enough
++        i = 1
++        while True:
++            index = 25*i
++            result_df = result_df.append(_search_scopus(self.apikey, query, type_, view=view, index=index),
++                                         ignore_index=True)
++            if result_df.shape[0] >= count:
++                return result_df[:count]
++            i += 1
++
++    def search_author(self, query, view='STANDARD', count=10):
++        '''
++            Search for specific authors
++            Details: http://api.elsevier.com/documentation/AUTHORSearchAPI.wadl
++            Fields: http://api.elsevier.com/content/search/fields/author
++
++            Parameters
++            ----------------------------------------------------------------------
++            query : str
++                Query style (see above websites).
++            count : int
++                The number of records to be returned.
++            view : string
++                Returned result view (i.e., return fields). Can only be STANDARD for author search.
++
++            Returns
++            ----------------------------------------------------------------------
++            pandas.DataFrame
++               Data frame of search results.
++        '''
++
++        return self.search(query, count, type_=2, view=view)
++
++    def search_author_publication(self, author_id, count=10000):
++        '''
++            Returns a list of document records for an author in the form of pandas.DataFrame.
++
++            Search for specific authors' document records in Scopus
++            Same thing for search, with search limited to author id
++
++            Parameters
++            ----------------------------------------------------------------------
++            author_id : str
++                Author id in Scopus database.
++            count : int
++                The number of records to return. By default set to 10000 for all docs.
++
++            Returns
++            ----------------------------------------------------------------------
++            pandas.DataFrame
++               Data frame of search results.
++        '''
++
++        query = 'au-id(%s)'%author_id
++        return self.search(query, count)
++
++    def retrieve_author(self, author_id):
++        '''
++            Search for specific authors
++            Details: http://api.elsevier.com/documentation/AuthorRetrievalAPI.wadl
++
++            Parameters
++            ----------------------------------------------------------------------
++            author_id : str
++                Author id in Scopus database.
++
++            Returns
++            ----------------------------------------------------------------------
++            dict
++               Dictionary of author information.
++        '''
++
++        par = {'apikey': self.apikey, 'httpAccept': 'application/json'}
++        r = requests.get('%s/%s'%(APIURI.AUTHOR, author_id), params=par)
++
++        js = r.json()
++        try:
++            return _parse_author_retrieval(js)
++        except:
++            raise ValueError('Author %s not found!' %author_id)
++
++    def retrieve_abstract(self, scopus_id, download_path=None, view='FULL'):
++        '''
++            Retrieve publication abstracts
++            Details: https://api.elsevier.com/documentation/AbstractRetrievalAPI.wadl
++
++            Parameters
++            ----------------------------------------------------------------------
++            scopus_id : str
++                Scopus id of a publication in Scopus database.
++            download_path : str
++                Where to save JSON response for this abstract retreival result. Default is None (do not save)
++            view : str
++                Options: BASIC, META, META_ABS, REF, FULL (default)
++
++
++            Returns
++            ----------------------------------------------------------------------
++            dict
++               Dictionary of publication id, title, and abstract.
++        '''
++
++        par = {'apikey': self.apikey, 'httpAccept': 'application/json', 'view': view}
++        r = requests.get('%s/%s'%(APIURI.ABSTRACT, scopus_id), params=par)
++
++        js = r.json()
++
++        if download_path is not None:
++            if not os.path.exists(download_path):
++                os.mkdir(download_path)
++            if not download_path.endswith('/'):
++                download_path += '/'
++            json.dump(js, open(download_path+scopus_id+'.json', 'w'))
++
++        try:
++            return _parse_abstract_retrieval(js)
++        except:
++            raise ValueError('Abstract for %s not found!' %scopus_id)
++
++    def retrieve_citation(self, scopus_id_array, year_range):
++        '''
++            Retrieve citation counts
++            Details: https://api.elsevier.com/documentation/AbstractCitationAPI.wadl
++
++            Parameters
++            ----------------------------------------------------------------------
++            scopus_id_array : array (list, tuple or np.array)
++                Scopus id of a publication in Scopus database.
++
++            year_range : array (list, tuple or np.array) of length 2
++                1st element is the start year; 2nd element is the end year. Both integers.
++
++            Returns
++            ----------------------------------------------------------------------
++            pandas DataFrame
++               Data frame of citation counts over time.
++        '''
++
++        date = '%i-%i' %(year_range[0], year_range[1])
++
++        par = {'apikey': self.apikey, 'scopus_id': ','.join(scopus_id_array), \
++                'httpAccept':'application/json', 'date': date}
++
++        r = requests.get(APIURI.CITATION, params=par)
++        js = r.json()
++
++        return _parse_citation(js, year_range)
++
++    def retrieve_full_text(self, full_text_link):
++        r = requests.get(full_text_link, params={'apikey': self.apikey,
++                                                 'httpAccept': 'application/json'}
++                        )
++        return r.json()['full-text-retrieval-response']['originalText']
++
++    def search_serial(self, title, view='CITESCORE', count=200):
++        '''
++            Search serial title metadata
++            Details: https://dev.elsevier.com/documentation/SerialTitleAPI.wadl
++
++            Parameters
++            ----------
++            title : str
++                Title to be searched in the database
++            view : str
++                Options: STANDARD, ENHANCED, CITESCORE (default), COVERIMAGE
++            count : int
++                Max number of results to be returned (200 by default)
++
++            Returns
++            -------
++            3 pandas DataFrames:
++                - first one is the meta information
++                - second one is the temporal citescore in each year
++                - last one is the temporal rank/percentile for each subject code in each year
++            If cite score is not avaiable then the last two are empty
++        '''
++        if type(count) != int or count > 200:
++            warnings.warn("count corrected to be 200", UserWarning)
++            count = 200
++        if view not in ['STANDARD', 'ENHANCED', 'CITESCORE']:
++            warnings.warn("view corrected to be CITESCORE", UserWarning)
++            view = 'CITESCORE'
++        par = {'apiKey': self.apikey, 'title': title,
++                'count': count, 'view': view}
++        r = requests.get(APIURI.SERIAL_SEARCH, par)
++        return _parse_serial(r.json())
++
++    def retrieve_serial(self, issn, view='CITESCORE'):
++        '''
++            Retrieve serial title metadata, given issn
++            Details: https://dev.elsevier.com/documentation/SerialTitleAPI.wadl
++
++            Parameters
++            ----------
++            issn : str
++                ISSN of the serial
++            view : str
++                Options: STANDARD, ENHANCED, CITESCORE (default), COVERIMAGE
++
++            Returns
++            -------
++            3 pandas DataFrames:
++                - first one is the meta information
++                - second one is the temporal citescore in each year
++                - last one is the temporal rank/percentile for each subject code in each year
++            If cite score is not avaiable then the last two are empty
++        '''
++
++        if view not in ['STANDARD', 'ENHANCED', 'CITESCORE']:
++            warnings.warn("view corrected to be CITESCORE", UserWarning)
++            view = 'CITESCORE'
++        par = {'apiKey': self.apikey, 'view': view}
++
++        r = requests.get(APIURI.SERIAL_RETRIEVAL+issn,
++                         params=par)
++        return _parse_serial(r.json())
++
++    def retrieve_affiliation(self, aff_id, view='STANDARD'):
++        '''
++            Retrieve affiliation profile, given id
++            Details: https://dev.elsevier.com/documentation/AffiliationRetrievalAPI.wadl
++
++            Parameters
++            ----------
++            aff_id : str
++                affiliation_id
++            view : str
++                Options: STANDARD (default), LIGHT, BASIC
++
++            Returns
++            -------
++        '''
++
++        par = {'apiKey': self.apikey, 'view': view, 'httpAccept': 'application/json'}
++
++        r = requests.get(APIURI.AFFL_RETRIEVAL+aff_id,
++                         params=par)
++        d = _parse_aff(r.json()['affiliation-retrieval-response'])
++        d['aff_id'] = aff_id
++        return d
+Index: venv/Lib/site-packages/pyscopus/__init__.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus/__init__.py b/venv/Lib/site-packages/pyscopus/__init__.py
+new file mode 100644
+--- /dev/null	(date 1616234756510)
++++ b/venv/Lib/site-packages/pyscopus/__init__.py	(date 1616234756510)
+@@ -0,0 +1,5 @@
++import os.path
++from pyscopus.scopus import Scopus
++from pkg_resources import get_distribution, DistributionNotFound
++
++__version__ = '1.0.3'
+Index: venv/Lib/site-packages/pyscopus-1.0.3.dist-info/LICENSE
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/LICENSE b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/LICENSE
+new file mode 100644
+--- /dev/null	(date 1616234756515)
++++ b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/LICENSE	(date 1616234756515)
+@@ -0,0 +1,21 @@
++The MIT License (MIT)
++
++Copyright (c) 2017-2018 Zhiya Zuo
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+Index: venv/Lib/site-packages/pyscopus-1.0.3.dist-info/INSTALLER
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/INSTALLER b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/INSTALLER
+new file mode 100644
+--- /dev/null	(date 1616234756631)
++++ b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/INSTALLER	(date 1616234756631)
+@@ -0,0 +1,1 @@
++pip
+Index: venv/Lib/site-packages/pyscopus-1.0.3.dist-info/RECORD
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/RECORD b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/RECORD
+new file mode 100644
+--- /dev/null	(date 1616234756650)
++++ b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/RECORD	(date 1616234756650)
+@@ -0,0 +1,15 @@
++pyscopus-1.0.3.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
++pyscopus-1.0.3.dist-info/LICENSE,sha256=PNshfrwZ69s2--LLejswNL2F_3U3C0YWtQneOCip2ik,1081
++pyscopus-1.0.3.dist-info/METADATA,sha256=7Ceoi3aN1QqSARHjj_CoZlWOnne9RPmbi9cxw3QMe88,2461
++pyscopus-1.0.3.dist-info/RECORD,,
++pyscopus-1.0.3.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
++pyscopus-1.0.3.dist-info/WHEEL,sha256=_NOXIqFgOaYmlm9RJLPQZ13BJuEIrp5jx5ptRD5uh3Y,92
++pyscopus-1.0.3.dist-info/top_level.txt,sha256=BqLLUs_wD7oNnMApkz3tB7JKNCaT8xDz1sMhzx6qAno,9
++pyscopus/APIURI.py,sha256=UX_dpr3uJZEICEyZAa_XDyso8zhHP9zJ5J4rlzkr0PA,526
++pyscopus/__init__.py,sha256=aLTI3FOkZf2w_8XoOgI-O1g1iEVIe5XdRKYFONtnR-Y,138
++pyscopus/__pycache__/APIURI.cpython-39.pyc,,
++pyscopus/__pycache__/__init__.cpython-39.pyc,,
++pyscopus/__pycache__/scopus.cpython-39.pyc,,
++pyscopus/__pycache__/utils.cpython-39.pyc,,
++pyscopus/scopus.py,sha256=0R6tM2eLOPXZUVTLwG_L7nMWzgmhiP-smv4V8_k4dtc,11304
++pyscopus/utils.py,sha256=EoXqYsJnaSUT5R8fpgF5Y1GIH0bbBes0k38mF3YHErE,17043
+Index: venv/Lib/site-packages/pyscopus-1.0.3.dist-info/METADATA
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/METADATA b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/METADATA
+new file mode 100644
+--- /dev/null	(date 1616234756516)
++++ b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/METADATA	(date 1616234756516)
+@@ -0,0 +1,84 @@
++Metadata-Version: 2.1
++Name: pyscopus
++Version: 1.0.3
++Summary: A Python wrapper for Scopus API
++Home-page: http://zhiyzuo.github.io/python-scopus/
++Author: Zhiya Zuo
++Author-email: zhiyazuo@gmail.com
++License: MIT
++Download-URL: https://github.com/zhiyzuo/python-scopus/tarball/1.0.3
++Keywords: scopus python api document retrieval information scholar academic
++Platform: UNKNOWN
++Classifier: Development Status :: 3 - Alpha
++Classifier: Intended Audience :: Education
++Classifier: Intended Audience :: Science/Research
++Classifier: Intended Audience :: Information Technology
++Classifier: Topic :: Text Editors :: Text Processing
++Classifier: Topic :: Scientific/Engineering :: Information Analysis
++Classifier: Topic :: Education
++Classifier: Topic :: Utilities
++Classifier: Operating System :: MacOS
++Classifier: Operating System :: Unix
++Classifier: License :: OSI Approved :: MIT License
++Classifier: Programming Language :: Python :: 2.7
++Classifier: Programming Language :: Python :: 3.6
++
++PyScopus is a Python wrapper for Scopus API: http://dev.elsevier.com/index.html
++
++** Updates on 10/09/2018
++
++- Add a new function to retrieve/search serial title metadata
++
++** Updates on 09/29/2018
++
++- Add a workaround for filtering author publication
++
++** Updates on 02/06/2018
++
++- Solved author search affiliation problem
++
++** Updates on 01/05/2018
++
++- Add full text link and author list when searching for articles
++
++** Updates on 12/29/2017
++
++- Improve: Fix bugs on start index when searching. Improve citation retrieval code.
++- Fix bugs on print/starting index
++
++** Updates on 12/28/2017
++
++- Improve: Compatible with Python 3.6 and fixed bugs on imports
++
++** Updates on 09/07/2017
++
++- Improve: An authorized API key is used for debugging.
++
++- Website updated.
++
++** Updates on 02/13/2017
++
++- Added 'search()'; (originally added in Dec. 2016)
++
++** Updates on 10/04/2016
++
++- Added 'retrieve_abstract()'
++
++- Removed 'search_abstract()'
++
++- Improved: 1) Allow users to save xml files for both abstract and author retrieval xml files; 2) Display unicodes when searching, instead of ignoring and force them into ascii encoding.
++
++** Updates on 09/14/2016
++
++- Add function for searching publications in a venue 
++
++  This can help users retrieve publication information from a specific venue within a specific year range.
++
++** Updates on 04/07/2016
++
++- Add Citation Overview API!!
++
++  This can help retrieve annual citation counts over a specified year range.
++  Please note that this requires special authorization.
++
++
+Index: venv/Lib/site-packages/pyscopus-1.0.3.dist-info/top_level.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/top_level.txt b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/top_level.txt
+new file mode 100644
+--- /dev/null	(date 1616234756518)
++++ b/venv/Lib/site-packages/pyscopus-1.0.3.dist-info/top_level.txt	(date 1616234756518)
+@@ -0,0 +1,1 @@
++pyscopus

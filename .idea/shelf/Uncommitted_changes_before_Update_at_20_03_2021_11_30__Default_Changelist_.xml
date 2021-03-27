@@ -1,0 +1,14 @@
+<changelist name="Uncommitted_changes_before_Update_at_20_03_2021_11_30_[Default_Changelist]" date="1616232612251" recycled="false" toDelete="true">
+  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_20_03_2021_11_30_[Default_Changelist]/shelved.patch" />
+  <option name="DESCRIPTION" value="Uncommitted changes before Update at 20/03/2021 11:30 [Default Changelist]" />
+  <binary>
+    <option name="BEFORE_PATH" />
+    <option name="AFTER_PATH" value="venv/Lib/site-packages/pip-21.0.1.dist-info/REQUESTED" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_20_03_2021_11_30_[Default_Changelist]/REQUESTED" />
+  </binary>
+  <binary>
+    <option name="BEFORE_PATH" />
+    <option name="AFTER_PATH" value="venv/Lib/site-packages/pyscopus-1.0.3.dist-info/REQUESTED" />
+    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_20_03_2021_11_30_[Default_Changelist]/REQUESTED1" />
+  </binary>
+</changelist>
