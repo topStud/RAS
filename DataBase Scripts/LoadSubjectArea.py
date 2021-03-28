@@ -3,10 +3,8 @@ import pymongo
 import pandas as pd
 
 
-def insert_info():
-    client = pymongo.MongoClient("mongodb://localhost:27017/")
-    db = client["scopusDB"]
-    collection = db["subjectArea"]
+def insert_info(db):
+    collection = db["scopus_subject_Area"]
     # basic document.
     document = {"_id": "", "code": "", "subjectArea": ""}
 

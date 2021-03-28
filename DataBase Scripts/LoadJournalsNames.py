@@ -14,7 +14,7 @@ def get_info():
 
 
 def load_data_to_DB(db):
-    journals_collection = db.Journal_names
+    scopus_journals_collection = db.scopus_Journal_names
 
     # getting list of names from journal_list file
     with open('journal_list', 'rb') as fp:
@@ -24,6 +24,6 @@ def load_data_to_DB(db):
     list_of_documents = []
     for item in journals_list:
         list_of_documents.append({"name": item})
-    journals_collection.insert_many(list_of_documents)
+    scopus_journals_collection.insert_many(list_of_documents)
 
 

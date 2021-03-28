@@ -1,8 +1,7 @@
 from pymongo.errors import ServerSelectionTimeoutError
 from pymongo import MongoClient
 from LoadJournalsNames import load_data_to_DB as namesLoad
-from ParseSubjectArea import insert_info as subjectAreaLoad
-
+from LoadSubjectArea import insert_info as subjectAreaLoad
 # constants
 IP = 'localhost'
 PORT = 27017
@@ -18,7 +17,7 @@ def main():
         print("loading journal names collection...")
         namesLoad(db)
         print("loading subject area collection...")
-        # subjectAreaLoad(db)
+        subjectAreaLoad(db)
 
         # closing connection
         client.close()
