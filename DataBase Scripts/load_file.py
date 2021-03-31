@@ -1,7 +1,8 @@
 from pymongo.errors import ServerSelectionTimeoutError
 from pymongo import MongoClient
-from LoadJournalsNames import load_data_to_DB as namesLoad
-from LoadSubjectArea import insert_info as subjectAreaLoad
+from LoadJournalsNames import load_data_to_DB as scopusNamesLoad
+from LoadScopusSubjectArea import load_data_to_DB as scopusSubjectAreaLoad
+from LoadWOSSubjectArea import load_data_to_DB as WOSSubjectAreaLoad
 # constants
 IP = 'localhost'
 PORT = 27017
@@ -14,10 +15,12 @@ def main():
         db = client.RAS_DB
 
         # loading data
-        print("loading journal names collection...")
-        namesLoad(db)
-        print("loading subject area collection...")
-        subjectAreaLoad(db)
+        print("loading scopus journal names collection...")
+        scopusNamesLoad(db)
+        print("loading scopus subject area collection...")
+        scopusSubjectAreaLoad(db)
+        print("loading WOS subject area collection...")
+        WOSSubjectAreaLoad(db)
 
         # closing connection
         client.close()
