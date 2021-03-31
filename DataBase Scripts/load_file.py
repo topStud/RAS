@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from LoadJournalsNames import load_data_to_DB as scopusNamesLoad
 from LoadScopusSubjectArea import load_data_to_DB as scopusSubjectAreaLoad
 from LoadWOSSubjectArea import load_data_to_DB as WOSSubjectAreaLoad
+from LoadWOSJournalsNames import load_data_to_DB as WOSNamesLoad
 # constants
 IP = 'localhost'
 PORT = 27017
@@ -21,6 +22,8 @@ def main():
         scopusSubjectAreaLoad(db)
         print("loading WOS subject area collection...")
         WOSSubjectAreaLoad(db)
+        print("loading WOS journal names collection...")
+        WOSNamesLoad(db)
 
         # closing connection
         client.close()
