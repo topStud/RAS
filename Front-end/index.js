@@ -60,6 +60,7 @@ function autocomplete(input, list) {
                     currFocus = x.childNodes.length - 1
                 // add active class to curr focus
                 addActiveClass(x, currFocus)
+                input.focus()
             } else if (event.keyCode === 13) {
                 // prevents default action of the enter keyCode
                 event.preventDefault()
@@ -103,6 +104,8 @@ function autocomplete(input, list) {
      */
     function addItemToList(item, val) {
         let divItem = document.createElement('div')
+        // enables to focus an element programmatically
+        divItem.setAttribute('tabindex', '-1')
         divItem.innerHTML = "<strong>" + item.substr(0, val.length) + "</strong>" +item.substr(val.length)
         // we add this input field so we can know the value of the user's choice. user won't see it.
         divItem.innerHTML += "<input type='hidden' value='" + item + "'>"
@@ -120,6 +123,7 @@ function autocomplete(input, list) {
      */
     function addActiveClass(autocompleteItems, currentFocus) {
         autocompleteItems.childNodes[currentFocus].classList.add('autocomplete-active')
+        autocompleteItems.childNodes[currentFocus].focus()
     }
 
     /**
