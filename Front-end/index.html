@@ -15,7 +15,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
 
-    <!-- script -->
+    <!-- scripts -->
     <script src="autocomplete.js"></script>
     <script src="index.js"></script>
 </head>
@@ -42,6 +42,27 @@
                 <input autocomplete="off" id="searchInput" type="text" name="searchInput" placeholder="Title1, Title2, ...">
             </div>
             <input type="button" value="Search" id="searchButton">
+        </div>
+        <div id="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th></th>
+                    <th colspan="2">Scopus</th>
+                    <th colspan="2">Web of Science</th>
+                </tr>
+                <tr>
+                    <th id="title">Source Title</th>
+                    <th>CiteScore</th>
+                    <th>Subject Area</th>
+                    <th>Impact Factor</th>
+                    <th>Category</th>
+                </tr>
+                </thead>
+                <tbody id="journals-output">
+                <!-- content will be added programmatically -->
+                </tbody>
+            </table>
         </div>
     </main>
     <footer>

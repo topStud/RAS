@@ -1,3 +1,6 @@
+/* -------------------------------------------------
+            general for the page
+------------------------------------------------- */
 * { box-sizing: border-box; }
 :root {
     --dark-brown: #1b1717;
@@ -22,6 +25,9 @@ body {
     font-family: 'Raleway', sans-serif;
     overflow-y: scroll;
 }
+/* -------------------------------------------------
+            scrollbar settings
+------------------------------------------------- */
 body::-webkit-scrollbar {
     width: 1em;
 }
@@ -56,6 +62,9 @@ body::-webkit-scrollbar-button {
 #autocomplete-list::-webkit-scrollbar-button {
     height: 0;
 }
+/* -------------------------------------------------
+            header of the page
+------------------------------------------------- */
 header {
     background-color: var(--dark-brown);
     position: sticky;
@@ -111,6 +120,9 @@ nav a:hover {
     background-color: var(--bright-bordeaux);
     color: var(--bright);
 }
+/* -------------------------------------------------
+            all related to the search
+------------------------------------------------- */
 #search-options {
     font-size: 1.5em;
     margin-top: 5%;
@@ -145,6 +157,7 @@ nav a:hover {
     margin-top: 20px;
     margin-right: 25%;
     margin-left: 25%;
+    height: 200px;
 }
 .autocomplete {
     position: relative;
@@ -219,4 +232,33 @@ input[type=button]:active {
 .autocomplete-active {
     /*when navigating through the items using the arrow keys:*/
     color: var(--bright);
+}
+/* -------------------------------------------------
+            table of content
+------------------------------------------------- */
+#table-container {
+    display: flex;
+    justify-content: center;
+    margin-right: 10%;
+    margin-left: 10%;
+    margin-top: 5%;
+    min-height: 200px;
+}
+table {
+    margin: 5px;
+    color: var(--bright);
+    width:100%;
+    border-spacing: 5px;
+}
+th {
+    background-color: var(--bright-bordeaux);
+    text-align: center;
+    box-shadow: 2px 7px #1b1717;
+}
+th, td {
+    padding: 15px;
+    margin: 5px;
+}
+#title{
+    width: 40%
 }
