@@ -1,18 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- metadata -->
     <meta charset="UTF-8">
     <title>RAS search</title>
-    <link type="text/css" rel="stylesheet" href="stylesheet.css">
+
+    <!-- style -->
+    <link type="text/css" rel="stylesheet" href="index.css">
+
+    <!-- fonts -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
+
+    <!-- script -->
+    <script src="autocomplete.js"></script>
     <script src="index.js"></script>
 </head>
 <body class="noSelect">
     <header>
         <div id="logo">
-            <!-- here will be a logo of RAS-->
-            RAS LOGO
+            <h1 id="logo-main-title">RAS</h1>
+            <h2 id="logo-sub-title">Researcher Auxiliary System</h2>
         </div>
         <nav id="menu">
             <a id="logIn" href="#">Log in</a>
@@ -21,6 +32,11 @@
         </nav>
     </header>
     <main>
+        <div id="search-options">
+            <button class="search-option">Journal name</button>|
+            <button class="search-option">Subject area</button>|
+            <button class="search-option">ISSN</button>
+        </div>
         <div id="search">
             <div id="autocomplete">
                 <input autocomplete="off" id="searchInput" type="text" name="searchInput" placeholder="Title1, Title2, ...">
