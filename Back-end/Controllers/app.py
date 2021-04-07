@@ -1,10 +1,11 @@
 from flask import Flask, jsonify, redirect, url_for
 from flask_cors import CORS
 from flask_pymongo import PyMongo
-# Routes
-from routes import *
 
-PORT = 5000
+# Routes
+import routes
+
+PORT = 5100
 app = Flask(__name__, static_folder='../../Front-end')
 CORS(app)
 # DataBase

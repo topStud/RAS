@@ -1,9 +1,13 @@
-from flask import Flask, jsonify
-from app import app, mongo
+from flask import jsonify
+import sys
+from app import app
+from os.path import dirname, join, abspath
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+
 from Model import DBModel
 
 
-@app.route('/journals_names', methods=['GET'])
+@app.route('/journals_names/', methods=['GET'])
 def get_all_journals_names():
     """
     wos_names_collection = mongo.db.WOS_journal_names

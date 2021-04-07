@@ -1,4 +1,9 @@
-from Controller.app import mongo
+import os
+import sys
+
+from os.path import dirname, join, abspath
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+from app import app, mongo
 
 
 def get_all_journals_names():
