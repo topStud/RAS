@@ -2,10 +2,13 @@ from flask import Flask, jsonify, redirect, url_for
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 
-# Routes
-import routes
+import sys
+from os.path import dirname, join, abspath
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+from Model import DBModel
 
-PORT = 5100
+
+PORT = 5000
 app = Flask(__name__, static_folder='../../Front-end')
 CORS(app)
 # DataBase
@@ -17,6 +20,11 @@ mongo = PyMongo(app)
 @app.route('/')
 def index():
     return redirect(url_for('static', filename='index.html'))
+
+
+@app.route('/journals_names/', methods=['GET'])
+def get_all_journals_names():
+    return jsonify(DBModel.get_all_journals_names()), 200
 
 
 if __name__ == '__main__':
