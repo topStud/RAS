@@ -18,8 +18,6 @@ function autocomplete(input, list) {
     });
 
     $(document).on('click', function (event) {
-        console.log(event.target)
-        console.log(input)
         if (event.target !== input[0])
             closeList()
     })
@@ -79,7 +77,6 @@ function autocomplete(input, list) {
             }
         }
         $('#autocomplete').append(divItems)
-        console.log(divItems[0])
     }
 
     /**
