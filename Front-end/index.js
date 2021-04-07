@@ -6,27 +6,37 @@ const countries = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "An
  * getJournalNamesList function.
  * function that needs to be executed only ones to get the list.
  */
-(function getJournalNamesList() {
-    // creating request to server
-    let requestObj = new XMLHttpRequest()
-    requestObj.onreadystatechange = function () {
-        if (this.readyState === 4 && this.status === 200) {
-            // saves list.
-            // on page load
-            /*document.addEventListener('DOMContentLoaded', (event) => {
-                let text_input_element = document.getElementById("searchInput")
-                // we start the functionality of autocomplete
-                autocomplete(text_input_element, countries)
-            })*/
-        }
-    }
-    requestObj.open('GET', 'journals_names', true)
-    requestObj.send()
-})()
+// (function getJournalNamesList() {
+//     // creating request to server
+//     let requestObj = new XMLHttpRequest()
+//     requestObj.onreadystatechange = function () {
+//         if (this.readyState === 4 && this.status === 200) {
+//             // saves list.
+//             // on page load
+//             /*document.addEventListener('DOMContentLoaded', (event) => {
+//                 let text_input_element = document.getElementById("searchInput")
+//                 // we start the functionality of autocomplete
+//                 autocomplete(text_input_element, countries)
+//             })*/
+//         }
+//     }
+//     requestObj.open('GET', 'journals_names', true)
+//     requestObj.send()
+// })()
 
-// on page load
-document.addEventListener('DOMContentLoaded', (event) => {
-    let text_input_element = document.getElementById("searchInput")
+$.ajax({
+    type: 'GET',
+    url: "../journals_names",
+    success: function (result) {
+        console.log(result)
+    },
+    error: function (XMLHttpRequest, textStatus, errorThrown) {
+        console.log(textStatus)
+    }
+});
+
+$(document).ready(()=> {
+    //let text_input_element = document.getElementById("searchInput")
     // we start the functionality of autocomplete
-    autocomplete(text_input_element, countries)
-})
+    autocomplete($('#searchInput'), countries)
+});

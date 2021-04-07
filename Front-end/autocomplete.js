@@ -7,27 +7,26 @@ function autocomplete(input, list) {
     // variable to help keep track of the item in focus
     let currFocus = -1;
 
-    // event for changing the content in the input element
-    input.addEventListener('input', (event) => {
+    input.on('input', function() {
         currFocus = -1
         createAutocompleteList()
     })
 
-    // event for clicking the input element
-    input.addEventListener('click', (event) => {
+    input.click(function () {
         currFocus = -1
         createAutocompleteList()
-    })
+    });
 
-    // when clicking on screen we close the autocomplete list, unless we clicked the input field.
-    document.addEventListener('click', (event) => {
-        if (event.target !== input)
+    $(document).on('click', function (event) {
+        console.log(event.target)
+        console.log(input)
+        if (event.target !== input[0])
             closeList()
     })
 
     // event for pressing the keyboard
-    input.addEventListener('keydown', (event) => {
-        let x = document.getElementById('autocomplete-list')
+    input.on('keydown', function(event) {
+        let x = $('#autocomplete-list')[0]
         // checks first if list exists
         if (x) {
             // DOWN or UP
@@ -43,19 +42,19 @@ function autocomplete(input, list) {
                 if (event.keyCode === 38)
                     currFocus--
                 // fixes the currFocus value (mod x.length)
-                if (currFocus >= x.childNodes.length)
+                if (currFocus >= x.children.length)
                     currFocus = 0
                 else if (currFocus < 0)
-                    currFocus = x.childNodes.length - 1
+                    currFocus = x.children.length - 1
                 // add active class to curr focus
                 addActiveClass(x, currFocus)
                 input.focus()
             } else if (event.keyCode === 13) {
                 // prevents default action of the enter keyCode
                 event.preventDefault()
-                if (currFocus > -1 && currFocus < x.childNodes.length)
+                if (currFocus > -1 && currFocus < x.children.length)
                     // simulates a click on list's option
-                    x.childNodes[currFocus].click()
+                    x.children[currFocus].click()
             }
         }
     })
@@ -67,21 +66,20 @@ function autocomplete(input, list) {
     function createAutocompleteList() {
         // first we close a list if one is open
         closeList()
-        let val = input.value
+        let val = input.val()
         // checks for value
         if (!val) return false
 
-        let divItems = document.createElement('div')
-        divItems.setAttribute('id', 'autocomplete-list')
-        document.getElementById('autocomplete').appendChild(divItems)
-
+        let divItems = $('<div></div>').attr('id','autocomplete-list')
         // goes over the list to check which names need to be added
         for (let i = 0; i < list.length; i++) {
             // prefix of journal name is the same as the user's input
             if (list[i].substr(0,val.length).toLowerCase() === val.toLowerCase()) {
-                divItems.appendChild(addItemToList(list[i], val))
+                divItems.append(addItemToList(list[i], val))
             }
         }
+        $('#autocomplete').append(divItems)
+        console.log(divItems[0])
     }
 
     /**
@@ -92,16 +90,15 @@ function autocomplete(input, list) {
      * @returns {HTMLDivElement} - div element of the item
      */
     function addItemToList(item, val) {
-        let divItem = document.createElement('div')
         // enables to focus an element programmatically
-        divItem.setAttribute('tabindex', '-1')
-        divItem.innerHTML = "<strong>" + item.substr(0, val.length) + "</strong>" +item.substr(val.length)
+        let divItem = $('<div></div>').attr('tabindex', '-1').addClass('list-item')
         // we add this input field so we can know the value of the user's choice. user won't see it.
-        divItem.innerHTML += "<input type='hidden' value='" + item + "'>"
-        divItem.addEventListener('click', (event) => {
-            input.value = divItem.getElementsByTagName('input')[0].value
+        divItem.html("<strong>" + item.substr(0, val.length) + "</strong>" +item.substr(val.length) + "<input type='hidden' value='" + item + "'>")
+        divItem.on('click', function() {
+            input.val(divItem.children('input')[0].value)
             closeList()
         })
+        // returns a div
         return divItem
     }
 
@@ -111,8 +108,8 @@ function autocomplete(input, list) {
      * @param currentFocus - index of item in focus
      */
     function addActiveClass(autocompleteItems, currentFocus) {
-        autocompleteItems.childNodes[currentFocus].classList.add('autocomplete-active')
-        autocompleteItems.childNodes[currentFocus].focus()
+         autocompleteItems.childNodes[currentFocus].classList.add('autocomplete-active')
+         autocompleteItems.childNodes[currentFocus].focus()
     }
 
     /**
@@ -121,7 +118,7 @@ function autocomplete(input, list) {
      * @param currentFocus - index of item in focus
      */
     function removeActiveClass(autocompleteItems, currentFocus) {
-        autocompleteItems.childNodes[currentFocus].classList.remove('autocomplete-active')
+         autocompleteItems.childNodes[currentFocus].classList.remove('autocomplete-active')
     }
 
     /**
@@ -131,13 +128,7 @@ function autocomplete(input, list) {
      * at last deletes the list itself.
      */
     function closeList() {
-        let x = document.getElementById('autocomplete-list')
-        if (x) {
-            for (let i = 0; i < x.childNodes.length; i++) {
-                x.removeChild(x.childNodes[i])
-                i--
-            }
-            document.getElementById('autocomplete').removeChild(x)
-        }
+        $('.list-item').remove()
+        $('#autocomplete-list').remove()
     }
 }
