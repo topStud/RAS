@@ -143,7 +143,11 @@ nav a:hover {
     border-bottom-color: #eeebdd;
 }
 .search-option:focus {
-     outline: none;
+    outline: none;
+}
+.chosenSearchOption {
+    outline: none;
+    border-bottom-color: #eeebdd;
 }
 .search-option:active {
     transform:scale(0.95,0.95);
