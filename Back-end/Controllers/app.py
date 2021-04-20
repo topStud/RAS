@@ -27,5 +27,16 @@ def get_all_journals_names():
     return jsonify(DBModel.get_all_journals_names()), 200
 
 
+@app.route('/data_by_name/<name>', methods=['GET'])
+def get_data_by_name(name):
+    # here maybe will be saving data to DB
+    return jsonify(DBModel.get_data_by_name(name)), 200
+
+
+@app.route('/data_by_issn/<issn>', methods=['GET'])
+def get_data_by_issn(issn):
+    return jsonify(DBModel.get_data_by_issn(issn)), 200
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=PORT)
