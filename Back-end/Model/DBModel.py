@@ -12,17 +12,35 @@ from app import app, mongo
 
 def get_all_journals_names():
     wos_names_collection = mongo.db.WOS_journal_names
+    scopus_names_collection = mongo.db.scopus_Journal_names
+    scopus_names = []
+    wos_names = wos_names_collection.distinct('name')
+    scopus_names = scopus_names_collection.distinct('name')
+    # all journals names with duplicates
+    names = scopus_names + wos_names
+
+    result = []
+    marker = set()
+    for journal in names:
+        lower_journal = journal.lower()
+        if lower_journal not in marker:  # test presence
+            marker.add(lower_journal)
+            result.append(journal)  # preserve order
+
+    return result
+    """
     names = []
     # take a union of journals names without repetitions
     journals_names = wos_names_collection.aggregate([
             {'$project': {'name': 1}},
             {'$unionWith': {'coll': "scopus_Journal_names", 'pipeline': [{'$project': {'name': 1}}]}},
-            {'$group': {'_id': {'$toLower': '$name'}}}])
+            {'$group': {'_id': {'$toUpper': '$name'}}}])
 
     for x in journals_names:
         names.append(x['_id'])
 
     return names
+    """
 
 
 def get_data_by_name(name):
@@ -59,6 +77,7 @@ def get_data_by_name(name):
     except KeyError as e:
         print('journal not found')
         return information
+
 
 def get_data_by_issn(issn):
     information = {}
