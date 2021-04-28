@@ -1,6 +1,5 @@
 import pickle
 from pandas import read_excel
-from pymongo import MongoClient
 
 
 def get_info():

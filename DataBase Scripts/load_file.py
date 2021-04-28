@@ -1,9 +1,10 @@
 from pymongo.errors import ServerSelectionTimeoutError
 from pymongo import MongoClient
-from LoadJournalsNames import load_data_to_DB as scopusNamesLoad
+from LoadScopusJournalsNames import load_data_to_DB as scopusNamesLoad
 from LoadScopusSubjectArea import load_data_to_DB as scopusSubjectAreaLoad
 from LoadWOSSubjectArea import load_data_to_DB as WOSSubjectAreaLoad
 from LoadWOSJournalsNames import load_data_to_DB as WOSNamesLoad
+from LoadJournalsNamesList import load_data_to_DB as JournalsNamesLoad
 # constants
 IP = 'localhost'
 PORT = 27017
@@ -24,6 +25,8 @@ def main():
         WOSSubjectAreaLoad(db)
         print("loading WOS journal names collection...")
         WOSNamesLoad(db)
+        print("loading united journals names list...")
+        JournalsNamesLoad(db)
 
         # closing connection
         client.close()
