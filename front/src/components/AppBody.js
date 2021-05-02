@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import SearchMenu from './SearchMenu'
 import '../style/App.css'
-import {Paper} from "@material-ui/core";
 import DataTable from "./Table";
 
 const useStyles = makeStyles((theme) => ({

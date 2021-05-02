@@ -139,7 +139,7 @@ function EnhancedTableHead(props) {
                         inputProps={{ 'aria-label': 'select all desserts' }}
                     />
                 </TableCell>
-                <TableCell></TableCell>
+                <TableCell/>
                 {headCells.map((headCell) => (
                     <TableCell
                         key={headCell.id}
@@ -220,8 +220,8 @@ const EnhancedTableToolbar = (props) => {
             )}
 
             {numSelected > 0 ? (
-                <Tooltip title="Add to favorites" aria-label="Add to favorites" style={{ height: '15px', width: '40px' }}>
-                    <Fab color="primary" className={classes.fab}>
+                <Tooltip title="Add to favorites" style={{ height: '15px', width: '40px' }}>
+                    <Fab color="secondary" className={classes.fab} aria-label="add">
                         <AddIcon />
                     </Fab>
                 </Tooltip>
