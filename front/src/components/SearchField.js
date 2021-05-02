@@ -14,89 +14,74 @@ xhttp.onreadystatechange = function() {
 xhttp.open('GET', "../journals_names", true);
 xhttp.send();
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        width: 500,
-        '& > * + *': {
-            marginTop: theme.spacing(3),
-        },
-    },
-}));
-
 const theme = createMuiTheme({
     palette: {
         primary: {
-            main: '#c8c8c8'
+            main: '#2a325b'
         },
         secondary: {
-            main: '#ffffff'
+            main: '#377fac'
         }
     }
 });
 
 export default function Tags(props) {
-    let value = props.option
-    const classes = useStyles();
-    console.log(value)
+    let value = props.option;
     switch (value) {
         case 0:
             return (
                 <MuiThemeProvider theme={theme}>
-                    <div className={classes.root}>
-                        <Autocomplete
-                            multiple
-                            id="tags-standard"
-                            options={journals_names}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    variant="standard"
-                                    label="Enter here the journal name"
-                                    placeholder="journal name"
-                                    color='primary'
-                                />
-                            )}
-                        />
-                    </div>
+                    <Autocomplete
+                        multiple
+                        id="tags-standard"
+                        options={journals_names}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                fullWidth={true}
+                                variant="standard"
+                                label="Enter here the journal name"
+                                placeholder="journal name"
+                                color='primary'
+                            />
+                        )}
+                    />
                 </MuiThemeProvider>
             );
         case 1:
             return (
                 <MuiThemeProvider theme={theme}>
-                    <div className={classes.root}>
-                        <Autocomplete
-                            multiple
-                            id="tags-standard"
-                            options={journals_names}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    variant="standard"
-                                    label="Enter here the subject area"
-                                    placeholder="subject area"
-                                    color='primary'
-                                />
-                            )}
-                        />
-                    </div>
+                    <Autocomplete
+                        multiple
+                        id="tags-standard"
+                        options={journals_names}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                fullWidth={true}
+                                variant="standard"
+                                label="Enter here the subject area"
+                                placeholder="subject area"
+                                color='primary'
+                            />
+                        )}
+                    />
                 </MuiThemeProvider>
             );
         case 2:
             return (
-                <TextField
-                    id="standard-number"
-                    placeholder="Enter here ths ISSN value of the journal"
-                    label="ISSN"
-                    type="number"
-                    fullWidth={true}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
+                <MuiThemeProvider theme={theme}>
+                    <TextField
+                        id="standard-number"
+                        placeholder="Enter here ths ISSN value of the journal"
+                        label="ISSN"
+                        type="number"
+                        fullWidth={true}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                </MuiThemeProvider>
             );
     }
-
-
-
-
 }

@@ -3,8 +3,10 @@ import {createMuiTheme, makeStyles, MuiThemeProvider} from '@material-ui/core/st
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import '../style/Search.css'
-import SearchField from './SearchField'
+import '../style/Search.css';
+import SearchField from './SearchField';
+//import Button from 'react-bootstrap/Button';
+import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles({
     root: {
@@ -16,6 +18,9 @@ const theme = createMuiTheme({
     palette: {
         primary: {
             main: '#6c6c6c'
+        },
+        secondary: {
+            main: '#34454d'
         }
     }
 });
@@ -44,7 +49,14 @@ export default function CenteredTabs() {
                 </Tabs>
             </Paper>
             <div id={'field-container'}>
-                <SearchField option={value}/>
+                <div id={'search-field-child'}>
+                    <SearchField option={value}/>
+                </div>
+                <div id={'button-child'}>
+                    <Button variant="contained" color="secondary">
+                        Search
+                    </Button>
+                </div>
             </div>
         </MuiThemeProvider>
     );

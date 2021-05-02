@@ -3,7 +3,7 @@ button:focus {
 }
 
 #tags-standard {
-    color: #ffffff;
+    color: #377fac;
 }
 
 .search-field-container {
@@ -17,4 +17,15 @@ button:focus {
 
 #field-container {
     margin-top: 5%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#search-field-child {
+    flex-grow: 5;
+    margin-right: 10px;
+}
+#button-child {
+    width: 100px;
 }
