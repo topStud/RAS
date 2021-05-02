@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import SearchMenu from './SearchMenu'
 import '../style/App.css'
+import {Paper} from "@material-ui/core";
+import DataTable from "./Table";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -26,23 +28,20 @@ function AppBody() {
                 </Grid>
                 <Grid item xs={6}>
                         <SearchMenu />
-                    {/*<SearchField />*/}
                 </Grid>
                 <Grid item xs>
                     {/* Nothing */}
                 </Grid>
             </Grid>
-            {/*<Grid container spacing={3}>
+            <Grid container spacing={0} id={'table-section'}>
                 <Grid item xs>
-                    <Paper className={classes.paper}>xs</Paper>
                 </Grid>
-                <Grid item xs={6}>
-                    <Paper className={classes.paper}>xs=6</Paper>
+                <Grid item xs={10}>
+                    <DataTable/>
                 </Grid>
                 <Grid item xs>
-                    <Paper className={classes.paper}>xs</Paper>
                 </Grid>
-            </Grid>*/}
+            </Grid>
         </div>
     );
 }
