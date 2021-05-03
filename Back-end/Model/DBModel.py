@@ -23,59 +23,39 @@ def get_all_subject_areas():
 
 
 def get_data_by_name(name):
-    information = {}
     try:
         meta_df, citescore_df, sj_rank_df = scopus.search_serial(name)
-        # insert journal name
-        information['name'] = meta_df['dc:title'][0]
-        # insert journal issn
-        information['issn'] = meta_df['prism:issn'][0]
-        # insert the last cite score
-        information['CiteScoreTracker'] = citescore_df.citeScore[0]
-        # insert the previous cite score
-        information['CiteScore'] = citescore_df.citeScore[1]
-        # insert ranks by subject area
-        num_of_subject_area = len(meta_df['subject-area'][0])
-
-        # find subject area by code:
-        scopus_subject_area_collection = mongo.db.scopus_subject_Area
-        sa_code = {}
-        subject_area = []
-        for code in meta_df['subject-area'][0]:
-            query_result = scopus_subject_area_collection.find({"code": int(code)}, {"_id": 0, "subjectArea": 1})
-            for x in query_result:
-                subject_area.append(x['subjectArea'])
-                sa_code[code] = x['subjectArea']
-
-        information['subjectArea'] = subject_area
-        lines = sj_rank_df.head(num_of_subject_area * 2).tail(num_of_subject_area)
-        information[sa_code[lines['subjectCode'][2]]] = lines['rank'][2]
-        information[sa_code[lines['subjectCode'][3]]] = lines['rank'][3]
-
-        return information
+        return parsing_data(meta_df, citescore_df, sj_rank_df, 'name')
     except KeyError as e:
         print('journal not found')
-        return information
+        return {}
 
 
 def get_data_by_issn(issn):
-    information = {}
     try:
         meta_df, citescore_df, sj_rank_df = scopus.retrieve_serial(issn)
+        return parsing_data(meta_df, citescore_df, sj_rank_df, issn)
+    except KeyError as e:
+        print('journal not found')
+        return {}
+
+
+def parsing_data(meta_df, citescore_df, sj_rank_df, amI):
+    information = {}
+    if meta_df.size != 0:
         # insert journal name
         information['name'] = meta_df['dc:title'][0]
         # insert journal issn
-        information['issn'] = meta_df['prism:issn'][0]
-        # insert the last cite score
-        information['CiteScoreTracker'] = citescore_df.citeScore[0]
-        # insert the previous cite score
-        information['CiteScore'] = citescore_df.citeScore[1]
+        if amI == 'name':
+            information['issn'] = meta_df['prism:issn'][0]
+        else:
+            information['issn'] = amI
+
         # insert ranks by subject area
         num_of_subject_area = len(meta_df['subject-area'][0])
-
         # find subject area by code:
         scopus_subject_area_collection = mongo.db.scopus_subject_Area
-        sa_code = {}
+        sa_code = {}  # dictionary of code:subject area name
         subject_area = []
         for code in meta_df['subject-area'][0]:
             query_result = scopus_subject_area_collection.find({"code": int(code)}, {"_id": 0, "subjectArea": 1})
@@ -84,11 +64,25 @@ def get_data_by_issn(issn):
                 sa_code[code] = x['subjectArea']
 
         information['subjectArea'] = subject_area
-        lines = sj_rank_df.head(num_of_subject_area * 2).tail(num_of_subject_area)
-        information[sa_code[lines['subjectCode'][2]]] = lines['rank'][2]
-        information[sa_code[lines['subjectCode'][3]]] = lines['rank'][3]
+        if sj_rank_df.size != 0:
+            lines = sj_rank_df.head(num_of_subject_area * 2).tail(num_of_subject_area)
+            information[sa_code[lines['subjectCode'][2]]] = lines['rank'][2]
+            information[sa_code[lines['subjectCode'][3]]] = lines['rank'][3]
+        else:
+            for sa in subject_area:
+                information[sa] = "N/A"
 
-        return information
-    except KeyError as e:
-        print('journal not found')
-        return information
+    else:
+        information['name'] = "N/A"
+        information['issn'] = "N/A"
+        information['subjectArea'] = "N/A"
+    if citescore_df.size != 0:
+        # insert the last cite score
+        information['CiteScoreTracker'] = citescore_df.citeScore[0]
+        # insert the previous cite score
+        information['CiteScore'] = citescore_df.citeScore[1]
+    else:
+        information['CiteScoreTracker'] = "N/A"
+        information['CiteScore'] = "N/A"
+
+    return information
