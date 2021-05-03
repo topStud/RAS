@@ -5,6 +5,7 @@ from LoadScopusSubjectArea import load_data_to_DB as scopusSubjectAreaLoad
 from LoadWOSSubjectArea import load_data_to_DB as WOSSubjectAreaLoad
 from LoadWOSJournalsNames import load_data_to_DB as WOSNamesLoad
 from LoadJournalsNamesList import load_data_to_DB as JournalsNamesLoad
+from LoadSubjectAreasList import load_data_to_DB as SubjectAreaLoad
 # constants
 IP = 'localhost'
 PORT = 27017
@@ -27,6 +28,8 @@ def main():
         WOSNamesLoad(db)
         print("loading united journals names list...")
         JournalsNamesLoad(db)
+        print("loading united subject areas list...")
+        SubjectAreaLoad(db)
 
         # closing connection
         client.close()

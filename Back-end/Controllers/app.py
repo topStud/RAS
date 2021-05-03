@@ -27,6 +27,11 @@ def get_all_journals_names():
     return jsonify(DBModel.get_all_journals_names()), 200
 
 
+@app.route('/subject_areas/', methods=['GET'])
+def get_all_subject_areas():
+    return jsonify(DBModel.get_all_subject_areas()), 200
+
+
 @app.route('/data_by_name/<name>', methods=['GET'])
 def get_data_by_name(name):
     # here maybe will be saving data to DB

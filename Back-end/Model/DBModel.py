@@ -16,6 +16,12 @@ def get_all_journals_names():
     return journals_names
 
 
+def get_all_subject_areas():
+    subject_areas_collection = mongo.db.subject_areas
+    subject_areas = subject_areas_collection.distinct('name')
+    return subject_areas
+
+
 def get_data_by_name(name):
     information = {}
     try:
