@@ -28,7 +28,7 @@ def get_data_by_name(name):
         return parsing_data(meta_df, citescore_df, sj_rank_df, 'name')
     except KeyError as e:
         print('journal not found')
-        return {}
+        return "error"
 
 
 def get_data_by_issn(issn):
@@ -37,7 +37,7 @@ def get_data_by_issn(issn):
         return parsing_data(meta_df, citescore_df, sj_rank_df, issn)
     except KeyError as e:
         print('journal not found')
-        return {}
+        return "error"
 
 
 def parsing_data(meta_df, citescore_df, sj_rank_df, amI):

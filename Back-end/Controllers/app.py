@@ -34,13 +34,26 @@ def get_all_subject_areas():
 
 @app.route('/data_by_name/<name>', methods=['GET'])
 def get_data_by_name(name):
-    # here maybe will be saving data to DB
+    if DBModel.get_data_by_name(name) == "error":
+        return 'journal not found', 404
     return jsonify(DBModel.get_data_by_name(name)), 200
 
 
 @app.route('/data_by_issn/<issn>', methods=['GET'])
 def get_data_by_issn(issn):
+    if DBModel.get_data_by_issn(issn) == "error":
+        return 'journal not found', 404
     return jsonify(DBModel.get_data_by_issn(issn)), 200
+
+
+"""
+@app.route('/data_by_list/<List:bate>', methods=['POST'])
+def get_data_by_list(bate):
+    l = []
+    for s in bate:
+        l.append(s)
+    return jsonify(l), 200
+"""
 
 
 if __name__ == '__main__':
