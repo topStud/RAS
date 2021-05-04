@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {createMuiTheme, makeStyles, MuiThemeProvider} from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Tabs from '@material-ui/core/Tabs';
@@ -30,8 +30,11 @@ export default function CenteredTabs() {
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event, newValue) => {
+        console.log(newValue)
         setValue(newValue);
     };
+
+    const [params, setParams] = useState([])
 
     return (
         <MuiThemeProvider theme={theme}>
@@ -50,14 +53,24 @@ export default function CenteredTabs() {
             </Paper>
             <div id={'field-container'}>
                 <div id={'search-field-child'}>
-                    <SearchField option={value}/>
+                    <SearchField option={value} handleParams={setParams}/>
                 </div>
                 <div id={'button-child'}>
-                    <Button variant="contained" color="secondary">
+                    <Button variant="contained" color="secondary" onClick={()=>onClickFunc(params)}>
                         Search
                     </Button>
                 </div>
             </div>
         </MuiThemeProvider>
     );
+}
+
+function onClickFunc(params) {
+    let list_of_maps = []
+    for (let i = 0; i < params.length; i++) {
+        fetch('data_by_name/' + params[i]).then(res => res.json()).then(data => {
+            list_of_maps.push(data);
+        }).catch(function (error) { console.log(error); });
+    }
+    console.log(list_of_maps)
 }
