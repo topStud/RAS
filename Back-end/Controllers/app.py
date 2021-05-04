@@ -34,6 +34,7 @@ def get_all_subject_areas():
 
 @app.route('/data_by_name/<name>', methods=['GET'])
 def get_data_by_name(name):
+    #s = json.loads(name)
     if DBModel.get_data_by_name(name) == "error":
         return 'journal not found', 404
     return jsonify(DBModel.get_data_by_name(name)), 200

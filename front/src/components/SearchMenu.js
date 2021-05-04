@@ -65,19 +65,17 @@ export default function CenteredTabs(props) {
 }
 
 function onClickFunc(params, setInfo) {
-    let list_of_maps = []
-    for (let i = 0; i < params.length; i++) {
-        fetch('data_by_name/' + params[i]).then(res => {
+    //let list_of_maps = []
+   // for (let i = 0; i < params.length; i++) {
+        fetch('data_by_name/' + /*params[i]*/JSON.stringify(params)).then(res => {
             if (!res.ok) {
                 throw Error(res.statusText);
             }
             return res.json()
         }).then(data => {
-            list_of_maps.push(data);
-            setInfo(list_of_maps)
-            console.log("in search menu after response arrived")
-            console.log(list_of_maps)
+            //list_of_maps.push(data);
+            setInfo(data)
         }).catch(function (error) { console.log(error); });
-    }
+   // }
 
 }

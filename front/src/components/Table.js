@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
 import {createMuiTheme, lighten, makeStyles, MuiThemeProvider} from '@material-ui/core/styles';
@@ -227,7 +227,6 @@ const theme = createMuiTheme({
 
 function Row(props) {
     const {row, index, selected, setSelected} = props;
-
     const handleClick = (event, name) => {
         const selectedIndex = selected.indexOf(name);
         let newSelected = [];
@@ -331,8 +330,6 @@ export default function EnhancedTable(props) {
     const handleChangeDense = (event) => {
         setDense(event.target.checked);
     };
-    console.log("i am in table")
-    console.log(props.journalInfo)
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, props.journalInfo.length - page * rowsPerPage);
     return (
         <MuiThemeProvider theme={theme}>

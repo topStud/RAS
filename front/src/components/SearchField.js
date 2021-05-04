@@ -13,7 +13,6 @@ export default class Tags extends React.Component {
             subjectAreaList: []
         };
         this.props = props;
-        console.log("hello"+this.props)
         this.handleParams = props.handleParams;
         this.onTagsChange = this.onTagsChange.bind(this);
         this.theme = createMuiTheme({
@@ -45,7 +44,6 @@ export default class Tags extends React.Component {
             // This will output an array of objects
             // given by Autocompelte options property.
             this.handleParams(this.state.tags)
-            console.log(this.state.tags);
         });
     }
 
