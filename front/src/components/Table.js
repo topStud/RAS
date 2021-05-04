@@ -1,48 +1,3 @@
-/*
-import * as React from 'react';
-import { DataGrid } from '@material-ui/data-grid';
-
-const columns = [
-    { field: 'id', headerName: 'ID', width: 70, description: 'Click to sort' },
-    { field: 'sourceTitle', headerName: 'Title', width: 190, description: 'Click to sort' },
-    { field: 'citeScore', headerName: 'CiteScore', type: 'number', width: 120, description: 'Click to sort' },
-    { field: 'subjectArea', headerName: 'Subject Area', width: 150, description: 'Click to sort' },
-    {
-        field: 'impactFactor',
-        headerName: 'Impact Factor',
-        type: 'number',
-        width: 150,
-        description: 'Click to sort'
-    },
-    {
-        field: 'category',
-        headerName: 'Category',
-        width: 150,
-        description: 'Click to sort'
-    }
-];
-
-// temporary
-const rows = [
-    { id: 1, sourceTitle: "name", citeScore: 2.5, subjectArea: 'Jon', impactFactor: 35, category: 'hello' },
-    { id: 2, sourceTitle: "another", citeScore: 7.8, subjectArea: 'Cersei', impactFactor: 42, category: 'hello' },
-    { id: 3, sourceTitle: "hi", citeScore: 4, subjectArea: 'Jaime', impactFactor: 45, category: 'hello' },
-    { id: 4, sourceTitle:"some", citeScore: 3.9, subjectArea: 'Arya', impactFactor: 16, category: 'hello' },
-    { id: 5, sourceTitle: "date", citeScore: 6, subjectArea: 'Daenerys', impactFactor: null, category: 'hello' },
-    { id: 6, sourceTitle: "random", citeScore: null, subjectArea: null, impactFactor: 150, category: 'hello' },
-    { id: 7, sourceTitle: "bye", citeScore: 5.6, subjectArea: 'Ferrara', impactFactor: 44, category: 'hello' },
-    { id: 8, sourceTitle: "food", citeScore: 4.7, subjectArea: 'Rossini', impactFactor: 36, category: 'hello' },
-    { id: 9, sourceTitle: "fun", citeScore: 2.9, subjectArea: 'Harvey', impactFactor: 65, category: 'hello' },
-];
-
-export default function DataTable() {
-    return (
-        <div style={{ height: 400, width: '100%' }}>
-            <DataGrid rows={rows} columns={columns} pageSize={5} checkboxSelection />
-        </div>
-    );
-}*/
-
 import React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
@@ -115,11 +70,11 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-    { id: 'name', numeric: false, disablePadding: true, label: 'Dessert (100g serving)' },
-    { id: 'calories', numeric: true, disablePadding: false, label: 'Calories' },
-    { id: 'fat', numeric: true, disablePadding: false, label: 'Fat (g)' },
-    { id: 'carbs', numeric: true, disablePadding: false, label: 'Carbs (g)' },
-    { id: 'protein', numeric: true, disablePadding: false, label: 'Protein (g)' },
+    { id: 'name', numeric: false, disablePadding: true, label: 'Title' },
+    { id: 'CiteScore', numeric: true, disablePadding: false, label: 'CiteScore' },
+    { id: 'subjectArea', numeric: true, disablePadding: false, label: 'Subject Area' },
+    /*{ id: 'carbs', numeric: true, disablePadding: false, label: 'Impact Factor' },
+    { id: 'protein', numeric: true, disablePadding: false, label: 'Category' },*/
 ];
 
 function EnhancedTableHead(props) {
@@ -320,10 +275,10 @@ function Row(props) {
                 <TableCell component="th" id={labelId} scope="row" padding="none">
                     {row.name}
                 </TableCell>
-                <TableCell align="right">{row.calories}</TableCell>
-                <TableCell align="right">{row.fat}</TableCell>
-                <TableCell align="right">{row.carbs}</TableCell>
-                <TableCell align="right">{row.protein}</TableCell>
+                <TableCell align="right">{row.CiteScore}</TableCell>
+                <TableCell align="right">{row.subjectArea}</TableCell>
+                {/*<TableCell align="right">{row.carbs}</TableCell>
+                <TableCell align="right">{row.protein}</TableCell>*/}
             </TableRow>
             <TableRow>
                 <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -340,7 +295,7 @@ function Row(props) {
     );
 }
 
-export default function EnhancedTable() {
+export default function EnhancedTable(props) {
     const classes = useStyles();
     const [order, setOrder] = React.useState('asc');
     const [orderBy, setOrderBy] = React.useState('calories');
@@ -357,7 +312,7 @@ export default function EnhancedTable() {
 
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
-            const newSelecteds = rows.map((n) => n.name);
+            const newSelecteds = props.journalInfo.map((n) => n.name);
             setSelected(newSelecteds);
             return;
         }
@@ -376,8 +331,9 @@ export default function EnhancedTable() {
     const handleChangeDense = (event) => {
         setDense(event.target.checked);
     };
-
-    const emptyRows = rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+    console.log("i am in table")
+    console.log(props.journalInfo)
+    const emptyRows = rowsPerPage - Math.min(rowsPerPage, props.journalInfo.length - page * rowsPerPage);
     return (
         <MuiThemeProvider theme={theme}>
         <div className={classes.root}>
@@ -397,10 +353,10 @@ export default function EnhancedTable() {
                             orderBy={orderBy}
                             onSelectAllClick={handleSelectAllClick}
                             onRequestSort={handleRequestSort}
-                            rowCount={rows.length}
+                            rowCount={props.journalInfo.length}
                         />
                         <TableBody>
-                            {stableSort(rows, getComparator(order, orderBy))
+                            {stableSort(props.journalInfo, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                 .map((row, index) => (
                                     <Row key={row.name} row={row} index={index} selected={selected} setSelected={setSelected}/>
@@ -416,7 +372,7 @@ export default function EnhancedTable() {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={rows.length}
+                    count={props.journalInfo.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onChangePage={handleChangePage}

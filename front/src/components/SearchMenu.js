@@ -25,12 +25,11 @@ const theme = createMuiTheme({
     }
 });
 
-export default function CenteredTabs() {
+export default function CenteredTabs(props) {
     const classes = useStyles();
     const [value, setValue] = React.useState(0);
 
     const handleChange = (event, newValue) => {
-        console.log(newValue)
         setValue(newValue);
     };
 
@@ -56,7 +55,7 @@ export default function CenteredTabs() {
                     <SearchField option={value} handleParams={setParams}/>
                 </div>
                 <div id={'button-child'}>
-                    <Button variant="contained" color="secondary" onClick={()=>onClickFunc(params)}>
+                    <Button variant="contained" color="secondary" onClick={()=>onClickFunc(params, props.setJournalInfo)}>
                         Search
                     </Button>
                 </div>
@@ -65,12 +64,20 @@ export default function CenteredTabs() {
     );
 }
 
-function onClickFunc(params) {
+function onClickFunc(params, setInfo) {
     let list_of_maps = []
     for (let i = 0; i < params.length; i++) {
-        fetch('data_by_name/' + params[i]).then(res => res.json()).then(data => {
+        fetch('data_by_name/' + params[i]).then(res => {
+            if (!res.ok) {
+                throw Error(res.statusText);
+            }
+            return res.json()
+        }).then(data => {
             list_of_maps.push(data);
+            setInfo(list_of_maps)
+            console.log("in search menu after response arrived")
+            console.log(list_of_maps)
         }).catch(function (error) { console.log(error); });
     }
-    console.log(list_of_maps)
+
 }

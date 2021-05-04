@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import SearchMenu from './SearchMenu'
@@ -18,6 +18,7 @@ const useStyles = makeStyles((theme) => ({
 
 function AppBody() {
     const classes = useStyles();
+    const [journalInfo, setJournalInfo] = useState([])
 
     return (
         <div className={classes.root}>
@@ -26,7 +27,7 @@ function AppBody() {
                     {/* Nothing */}
                 </Grid>
                 <Grid item xs={6}>
-                        <SearchMenu />
+                        <SearchMenu setJournalInfo ={setJournalInfo}/>
                 </Grid>
                 <Grid item xs>
                     {/* Nothing */}
@@ -36,7 +37,7 @@ function AppBody() {
                 <Grid item xs>
                 </Grid>
                 <Grid item xs={10}>
-                    <DataTable/>
+                    <DataTable journalInfo={journalInfo}/>
                 </Grid>
                 <Grid item xs>
                 </Grid>
