@@ -1,3 +1,4 @@
+import json
 from flask import Flask, jsonify, redirect, url_for
 from flask_cors import CORS
 from flask_pymongo import PyMongo
@@ -34,7 +35,6 @@ def get_all_subject_areas():
 
 @app.route('/data_by_name/<name>', methods=['GET'])
 def get_data_by_name(name):
-    #s = json.loads(name)
     if DBModel.get_data_by_name(name) == "error":
         return 'journal not found', 404
     return jsonify(DBModel.get_data_by_name(name)), 200
@@ -47,14 +47,39 @@ def get_data_by_issn(issn):
     return jsonify(DBModel.get_data_by_issn(issn)), 200
 
 
-"""
-@app.route('/data_by_list/<List:bate>', methods=['POST'])
-def get_data_by_list(bate):
-    l = []
-    for s in bate:
-        l.append(s)
-    return jsonify(l), 200
-"""
+@app.route('/data_by_name_list/<names_list>', methods=['GET'])
+def get_data_by_name_list(names_list):
+    # convert string to list
+    names_list = json.loads(names_list)
+    data_list = []
+    for name in names_list:
+        # get the data of that journal
+        data_dict = DBModel.get_data_by_name(name)
+        if data_dict == "error":
+            continue
+        data_list.append(data_dict)
+    if len(data_list) == 0:
+        return 'journal not found', 404
+    return jsonify(data_list), 200
+
+
+@app.route('/data_by_issn_list/<issn_list>', methods=['GET'])
+def get_data_by_issn_list(issn_list):
+    # convert string to list
+    issn_list = json.loads(issn_list)
+    data_dict = {}  # journal name: dict of data
+    for issn in issn_list:
+        # get the data of that issn
+        dict = DBModel.get_data_by_issn(issn)
+        if dict == "error":
+            continue
+        data_dict[dict['name']] = dict
+    if len(data_dict) == 0:
+        return 'journal not found', 404
+
+    # convert the data dictionary to list of data
+    data_list = list(data_dict.values())
+    return jsonify(data_list), 200
 
 
 if __name__ == '__main__':

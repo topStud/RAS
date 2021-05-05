@@ -25,7 +25,7 @@ def get_all_subject_areas():
 def get_data_by_name(name):
     try:
         meta_df, citescore_df, sj_rank_df = scopus.search_serial(name)
-        return parsing_data(meta_df, citescore_df, sj_rank_df, 'name')
+        return parsing_data(meta_df, citescore_df, sj_rank_df)
     except KeyError as e:
         print('journal not found')
         return "error"
@@ -34,22 +34,28 @@ def get_data_by_name(name):
 def get_data_by_issn(issn):
     try:
         meta_df, citescore_df, sj_rank_df = scopus.retrieve_serial(issn)
-        return parsing_data(meta_df, citescore_df, sj_rank_df, issn)
+        return parsing_data(meta_df, citescore_df, sj_rank_df)
     except KeyError as e:
         print('journal not found')
         return "error"
 
 
-def parsing_data(meta_df, citescore_df, sj_rank_df, amI):
+def parsing_data(meta_df, citescore_df, sj_rank_df):
     information = {}
     if meta_df.size != 0:
         # insert journal name
         information['name'] = meta_df['dc:title'][0]
-        # insert journal issn
-        if amI == 'name':
+        # insert journal issn ans e-issn
+        try:
             information['issn'] = meta_df['prism:issn'][0]
-        else:
-            information['issn'] = amI
+        except:
+            information['issn'] = "N/A"
+            pass
+        try:
+            information['e-issn'] = meta_df['prism:eIssn'][0]
+        except:
+            information['e-issn'] = "N/A"
+            pass
 
         # insert ranks by subject area
         num_of_subject_area = len(meta_df['subject-area'][0])
@@ -66,8 +72,8 @@ def parsing_data(meta_df, citescore_df, sj_rank_df, amI):
         information['subjectArea'] = subject_area
         if sj_rank_df.size != 0:
             lines = sj_rank_df.head(num_of_subject_area * 2).tail(num_of_subject_area)
-            information[sa_code[lines['subjectCode'][2]]] = lines['rank'][2]
-            information[sa_code[lines['subjectCode'][3]]] = lines['rank'][3]
+            for num in range(num_of_subject_area, num_of_subject_area*2):
+                information[sa_code[lines['subjectCode'][num]]] = lines['rank'][num]
         else:
             for sa in subject_area:
                 information[sa] = "N/A"
