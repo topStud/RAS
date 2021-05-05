@@ -3,6 +3,9 @@ import React from 'react';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import {createMuiTheme, MuiThemeProvider} from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
+import { createFilterOptions } from '@material-ui/lab/Autocomplete';
+import parse from 'autosuggest-highlight/parse';
+import match from 'autosuggest-highlight/match';
 
 export default class Tags extends React.Component {
     constructor(props) {
@@ -25,12 +28,17 @@ export default class Tags extends React.Component {
                 }
             }
         });
+        this.filterOptions = createFilterOptions({
+            limit: 20,
+            matchFrom: 'start',
+        });
         fetch('/journals_names').then(res => res.json()).then(data => {
             this.setState({
                 journalList: data
             })
         }).catch(function (error) { console.log(error); });
         fetch('/subject_areas').then(res => res.json()).then(data => {
+            console.log(data)
             this.setState({
                 subjectAreaList: data
             })
@@ -54,6 +62,7 @@ export default class Tags extends React.Component {
                     <MuiThemeProvider theme={this.theme}>
                         <Autocomplete
                             freeSolo
+                            filterOptions={this.filterOptions}
                             multiple
                             includeInputInList
                             onChange={this.onTagsChange}
@@ -61,6 +70,20 @@ export default class Tags extends React.Component {
                             renderInput={(params) => (
                                 <TextField {...params} label="Journal names" variant="standard" placeholder={'Enter journal names here'}/>
                             )}
+                            renderOption={(option, { inputValue }) => {
+                                const matches = match(option, inputValue);
+                                const parts = parse(option, matches);
+
+                                return (
+                                    <div>
+                                        {parts.map((part, index) => (
+                                            <span key={index} style={{ fontWeight: part.highlight ? 700 : 400 }}>
+                                                {part.text}
+                                            </span>
+                                        ))}
+                                    </div>
+                                );
+                            }}
                         />
                     </MuiThemeProvider>
                 );
@@ -70,12 +93,27 @@ export default class Tags extends React.Component {
                         <Autocomplete
                             freeSolo
                             multiple
+                            filterOptions={this.filterOptions}
                             includeInputInList
                             options={this.state.subjectAreaList}
                             onChange={this.onTagsChange}
                             renderInput={(params) => (
                                 <TextField {...params} label="Subject area" variant="standard" placeholder={'Enter subject area here'}/>
                             )}
+                            renderOption={(option, { inputValue }) => {
+                                const matches = match(option, inputValue);
+                                const parts = parse(option, matches);
+
+                                return (
+                                    <div>
+                                        {parts.map((part, index) => (
+                                            <span key={index} style={{ fontWeight: part.highlight ? 700 : 400 }}>
+                                                {part.text}
+                                            </span>
+                                        ))}
+                                    </div>
+                                );
+                            }}
                         />
                     </MuiThemeProvider>
                 );
@@ -200,76 +238,3 @@ const top100Films = [
     { title: '3 Idiots', year: 2009 },
     { title: 'Monty Python and the Holy Grail', year: 1975 },
 ];
-
-
-// export default function Tags(props) {
-//     const [journalList, setJournalList] = useState([])
-//     if (journalList.length === 0)
-//         fetch('/journals_names').then(res => res.json()).then(data => {
-//             setJournalList(data)
-//         })
-//
-//     let value = props.option;
-//     switch (value) {
-//         case 0:
-//             return (
-//                 <MuiThemeProvider theme={theme}>
-//                     <Autocomplete
-//                         multiple
-//                         includeInputInList
-//                         filterSelectedOptions
-//                         id="tags-standard"
-//                         options={journalList}
-//                         onChange={this.onTagsChange}
-//                         renderInput={(params) => (
-//                             <TextField
-//                                 {...params}
-//                                 fullWidth
-//                                 variant="standard"
-//                                 label="Enter here the journal name"
-//                                 placeholder="journal name"
-//                                 color='primary'
-//                             />
-//                         )}
-//                     />
-//                 </MuiThemeProvider>
-//             );
-//         case 1:
-//             return (
-//                 <MuiThemeProvider theme={theme}>
-//                     <Autocomplete
-//                         multiple
-//                         id="tags-standard"
-//                         options={journalList}
-//                         freeSolo={true}
-//                         renderInput={(params) => (
-//                             <TextField
-//                                 {...params}
-//                                 fullWidth={true}
-//                                 variant="standard"
-//                                 label="Enter here the subject area"
-//                                 placeholder="subject area"
-//                                 color='primary'
-//                             />
-//
-//                         )}
-//                     />
-//                 </MuiThemeProvider>
-//             );
-//         case 2:
-//             return (
-//                 <MuiThemeProvider theme={theme}>
-//                     <TextField
-//                         id="standard-number"
-//                         placeholder="Enter here ths ISSN value of the journal"
-//                         label="ISSN"
-//                         type="number"
-//                         fullWidth={true}
-//                         InputLabelProps={{
-//                             shrink: true,
-//                         }}
-//                     />
-//                 </MuiThemeProvider>
-//             );
-//     }
-// }
