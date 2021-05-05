@@ -55,7 +55,7 @@ export default function CenteredTabs(props) {
                     <SearchField option={value} handleParams={setParams}/>
                 </div>
                 <div id={'button-child'}>
-                    <Button variant="contained" color="secondary" onClick={()=>onClickFunc(params, props.setJournalInfo)}>
+                    <Button variant="contained" color="secondary" onClick={()=>onClickFunc(value, params, props.setJournalInfo)}>
                         Search
                     </Button>
                 </div>
@@ -64,18 +64,29 @@ export default function CenteredTabs(props) {
     );
 }
 
-function onClickFunc(params, setInfo) {
-    //let list_of_maps = []
-   // for (let i = 0; i < params.length; i++) {
-        fetch('data_by_name/' + /*params[i]*/JSON.stringify(params)).then(res => {
-            if (!res.ok) {
-                throw Error(res.statusText);
-            }
-            return res.json()
-        }).then(data => {
-            //list_of_maps.push(data);
-            setInfo(data)
-        }).catch(function (error) { console.log(error); });
-   // }
+function onClickFunc(option, params, setInfo) {
+    switch (option) {
+        case 0:
+            get_data_for_table('data_by_name/', params, setInfo)
+            break;
+        case 1:
+            get_data_for_table('data_by_subjectArea/', params, setInfo)
+            break;
+        case 2:
+            get_data_for_table('data_by_issn/', params, setInfo)
+            break;
+        default:
+            break;
+    }
+}
 
+function get_data_for_table(url, params, setInfo) {
+    fetch(url + JSON.stringify(params)).then(res => {
+        if (!res.ok) {
+            throw Error(res.statusText);
+        }
+        return res.json()
+    }).then(data => {
+        setInfo(data)
+    }).catch(function (error) { console.log(error); });
 }

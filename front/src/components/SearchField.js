@@ -120,16 +120,24 @@ export default class Tags extends React.Component {
             case 2:
                 return (
                     <MuiThemeProvider theme={this.theme}>
-                        <TextField
-                            id="standard-number"
-                            placeholder="Enter here ths ISSN value of the journal"
-                            label="ISSN"
-                            type="number"
-                            fullWidth={true}
-                            InputLabelProps={{
-                                shrink: true,
-                            }}
-                        />
+                        <Autocomplete
+                            freeSolo
+                            multiple
+                            onChange={this.onTagsChange}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    id="standard-number"
+                                    placeholder="Enter here ths ISSN value of the journal"
+                                    label="ISSN"
+                                    type="number"
+                                    fullWidth={true}
+                                    InputLabelProps={{
+                                        shrink: true,
+                                    }}
+                                />
+                            )}
+                         options={[]}/>
                     </MuiThemeProvider>
                 );
         }
