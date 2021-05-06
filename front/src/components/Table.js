@@ -275,7 +275,11 @@ function Row(props) {
                     {row.name}
                 </TableCell>
                 <TableCell align="left">{row.CiteScore}</TableCell>
-                <TableCell align="left">{row.subjectArea}</TableCell>
+                <TableCell align="left">
+                    {
+                        row.subjectArea.map((item) => <p key={item} style={{margin: 0}}>{item}</p>)
+                    }
+                </TableCell>
                 {/*<TableCell align="right">{row.carbs}</TableCell>
                 <TableCell align="right">{row.protein}</TableCell>*/}
             </TableRow>
