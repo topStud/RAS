@@ -33,21 +33,7 @@ def get_all_subject_areas():
     return jsonify(DBModel.get_all_subject_areas()), 200
 
 
-@app.route('/data_by_name/<name>', methods=['GET'])
-def get_data_by_name(name):
-    if DBModel.get_data_by_name(name) == "error":
-        return 'journal not found', 404
-    return jsonify(DBModel.get_data_by_name(name)), 200
-
-
-@app.route('/data_by_issn/<issn>', methods=['GET'])
-def get_data_by_issn(issn):
-    if DBModel.get_data_by_issn(issn) == "error":
-        return 'journal not found', 404
-    return jsonify(DBModel.get_data_by_issn(issn)), 200
-
-
-@app.route('/data_by_name_list/<names_list>', methods=['GET'])
+@app.route('/data_by_names/<names_list>', methods=['GET'])
 def get_data_by_name_list(names_list):
     # convert string to list
     names_list = json.loads(names_list)
@@ -63,7 +49,7 @@ def get_data_by_name_list(names_list):
     return jsonify(data_list), 200
 
 
-@app.route('/data_by_issn_list/<issn_list>', methods=['GET'])
+@app.route('/data_by_issns/<issn_list>', methods=['GET'])
 def get_data_by_issn_list(issn_list):
     # convert string to list
     issn_list = json.loads(issn_list)
