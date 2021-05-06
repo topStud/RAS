@@ -38,7 +38,6 @@ export default class Tags extends React.Component {
             })
         }).catch(function (error) { console.log(error); });
         fetch('/subject_areas').then(res => res.json()).then(data => {
-            console.log(data)
             this.setState({
                 subjectAreaList: data
             })

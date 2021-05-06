@@ -70,9 +70,9 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
-    { id: 'name', numeric: false, disablePadding: true, label: 'Title' },
-    { id: 'CiteScore', numeric: true, disablePadding: false, label: 'CiteScore' },
-    { id: 'subjectArea', numeric: true, disablePadding: false, label: 'Subject Area' },
+    { id: 'name', numeric: false, disablePadding: false, label: 'Title' },
+    { id: 'CiteScore', numeric: true, disablePadding: true, label: 'CiteScore' },
+    { id: 'subjectArea', numeric: false, disablePadding: true, label: 'Subject Area' },
     /*{ id: 'carbs', numeric: true, disablePadding: false, label: 'Impact Factor' },
     { id: 'protein', numeric: true, disablePadding: false, label: 'Category' },*/
 ];
@@ -98,7 +98,7 @@ function EnhancedTableHead(props) {
                 {headCells.map((headCell) => (
                     <TableCell
                         key={headCell.id}
-                        align={headCell.numeric ? 'right' : 'left'}
+                        align={'left'}
                         padding={headCell.disablePadding ? 'none' : 'default'}
                         sortDirection={orderBy === headCell.id ? order : false}
                     >
@@ -202,7 +202,7 @@ const useStyles = makeStyles((theme) => ({
         marginBottom: theme.spacing(2),
     },
     table: {
-        minWidth: 750,
+        minWidth: 590,
     },
     visuallyHidden: {
         border: 0,
@@ -274,8 +274,8 @@ function Row(props) {
                 <TableCell component="th" id={labelId} scope="row" padding="none">
                     {row.name}
                 </TableCell>
-                <TableCell align="right">{row.CiteScore}</TableCell>
-                <TableCell align="right">{row.subjectArea}</TableCell>
+                <TableCell align="left">{row.CiteScore}</TableCell>
+                <TableCell align="left">{row.subjectArea}</TableCell>
                 {/*<TableCell align="right">{row.carbs}</TableCell>
                 <TableCell align="right">{row.protein}</TableCell>*/}
             </TableRow>
@@ -330,6 +330,7 @@ export default function EnhancedTable(props) {
     const handleChangeDense = (event) => {
         setDense(event.target.checked);
     };
+    console.log(props.journalInfo)
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, props.journalInfo.length - page * rowsPerPage);
     return (
         <MuiThemeProvider theme={theme}>
