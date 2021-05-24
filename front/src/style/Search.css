@@ -29,3 +29,12 @@ button:focus {
 #button-child {
     width: 100px;
 }
+
+#addFrom {
+    background-color: transparent;
+    border: none;
+    text-decoration-line: underline;
+    float: left;
+    margin-top: 10px;
+    font-size: 0.8em;
+}

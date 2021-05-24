@@ -13,7 +13,8 @@ export default class Tags extends React.Component {
         this.state = {
             tags: [],
             journalList: [],
-            subjectAreaList: []
+            subjectAreaList: [],
+            fieldValue: []
         };
         this.props = props;
         this.handleParams = props.handleParams;
@@ -46,12 +47,24 @@ export default class Tags extends React.Component {
 
     onTagsChange = (event, values) => {
         this.setState({
-            tags: values
+            tags: values,
         }, () => {
             // This will output an array of objects
             // given by Autocompelte options property.
             this.handleParams(this.state.tags)
         });
+    }
+
+    setTags = (values) => {
+       // console.log(values)
+        this.setState({
+            tags: values,
+        }, () => {
+            // This will output an array of objects
+            // given by Autocompelte options property.
+            console.log(this.state.tags)
+            this.handleParams(this.state.tags)
+        })
     }
 
     render() {
@@ -64,7 +77,11 @@ export default class Tags extends React.Component {
                             filterOptions={this.filterOptions}
                             multiple
                             includeInputInList
-                            onChange={this.onTagsChange}
+                            value={this.state.tags}
+                            onChange={(event, newValue) => {
+                                this.setState({tags: newValue})
+                                this.onTagsChange(event,newValue)
+                            }}
                             options={this.state.journalList}
                             renderInput={(params) => (
                                 <TextField {...params} label="Journal names" variant="standard" placeholder={'Enter journal names here'}/>
@@ -116,6 +133,16 @@ export default class Tags extends React.Component {
                         />
                     </MuiThemeProvider>
                 );
+                /*
+                    <Autocomplete
+                        options={options.sort((a, b) => -b.firstLetter.localeCompare(a.firstLetter))}
+                        groupBy={(option) => option.domain}
+                        getOptionLabel={(option) => option.subDomain}
+                        renderInput={(params) => (
+                                <TextField {...params} label="Subject area" variant="standard" placeholder={'Enter subject area here'}/>
+                        )}
+                    />
+                 */
             case 2:
                 return (
                     <MuiThemeProvider theme={this.theme}>

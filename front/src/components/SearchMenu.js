@@ -5,14 +5,28 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import '../style/Search.css';
 import SearchField from './SearchField';
-//import Button from 'react-bootstrap/Button';
 import Button from '@material-ui/core/Button';
+import Backdrop from '@material-ui/core/Backdrop';
+import ConfirmationDialogRaw from './AddFromDialog'
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+    },
     root: {
         flexGrow: 1,
     },
-});
+    dialog: {
+        width: '100%',
+        maxWidth: 360,
+        backgroundColor: theme.palette.background.paper,
+    },
+    paper: {
+        width: '80%',
+        maxHeight: 435,
+    },
+}));
 
 const theme = createMuiTheme({
     palette: {
@@ -28,12 +42,23 @@ const theme = createMuiTheme({
 export default function CenteredTabs(props) {
     const classes = useStyles();
     const [value, setValue] = React.useState(0);
+    const [open, setOpen] = React.useState(false);
+    const [params, setParams] = useState([])
+    const ref = React.createRef()
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
 
-    const [params, setParams] = useState([])
+    const handleClickListItem = () => {
+        setOpen(true);
+    };
+
+    const handleClose = (values) => {
+        setOpen(false);
+        values.push.apply(ref.current.state.tags)
+        ref.current.setTags(values)
+    };
 
     return (
         <MuiThemeProvider theme={theme}>
@@ -52,13 +77,28 @@ export default function CenteredTabs(props) {
             </Paper>
             <div id={'field-container'}>
                 <div id={'search-field-child'}>
-                    <SearchField option={value} handleParams={setParams}/>
+                    <SearchField option={value} handleParams={setParams} ref={ref}/>
                 </div>
                 <div id={'button-child'}>
                     <Button variant="contained" color="secondary" onClick={()=>onClickFunc(value, params, props)}>
                         Search
                     </Button>
                 </div>
+            </div>
+            <div>
+                <button id={"addFrom"} onClick={() => handleClickListItem()}>Add from..</button>
+                <Backdrop className={classes.backdrop} open={open}>
+                    <div className={classes.dialog}>
+                        <ConfirmationDialogRaw
+                            classes={{
+                                paper: classes.paper,
+                            }}
+                            keepMounted
+                            open={open}
+                            onClose={handleClose}
+                        />
+                    </div>
+                </Backdrop>
             </div>
         </MuiThemeProvider>
     );
