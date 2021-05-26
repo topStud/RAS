@@ -4,22 +4,22 @@ import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 
 function AppMenu() {
-    const [active_1, setActive_1] = React.useState(false)
-    const [active_2, setActive_2] = React.useState(false)
-    const [active_3, setActive_3] = React.useState(false)
+    let active_1 = false
+    let active_2 = false
+    let active_3 = false
 
-    const home = '/'
-    const privatePage = '/privatePage'
-    const log = '/logIn'
+    const home = ''
+    const privatePage = 'privatePage'
+    const log = 'logIn'
+
     const relative_path = window.location.href.replace(/^(?:\/\/|[^/]+)*\//, '')
-    // console.log(window.location.href.replace(/^(?:\/\/|[^/]+)*\//, ''))
-    // if (relative_path === home) {
-    //     setActive_1(true)
-    // } else if(relative_path === privatePage) {
-    //     setActive_2(true)
-    // } else if(relative_path === log) {
-    //     setActive_3(true)
-    // }
+    if (relative_path === home) {
+        active_1 = true
+    } else if(relative_path === privatePage) {
+        active_2 = true
+    } else if(relative_path === log) {
+        active_3 = true
+    }
 
     return(
         <Navbar bg="dark" variant="dark" className={'nav-header'}>
