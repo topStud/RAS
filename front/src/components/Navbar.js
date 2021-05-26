@@ -7,10 +7,10 @@ function AppMenu() {
     return(
         <Navbar bg="dark" variant="dark" className={'nav-header'}>
             <Navbar.Brand href="/">RAS <small>Researcher’s Auxiliary System</small></Navbar.Brand>
-            <Nav className="mr-auto" defaultActiveKey="#home">
-                <Nav.Link href="/">Home</Nav.Link>
+            <Nav className="mr-auto" defaultActiveKey="/">
+                <Nav.Link href='/'>Home</Nav.Link>
                 <Nav.Link href='/privatePage'>Private Area</Nav.Link>
-                <Nav.Link href="/logIn">Log In</Nav.Link>
+                <Nav.Link href='/logIn'>Log In</Nav.Link>
             </Nav>
         </Navbar>
     )

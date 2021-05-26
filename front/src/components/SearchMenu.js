@@ -45,6 +45,7 @@ export default function CenteredTabs(props) {
     const [open, setOpen] = React.useState(false);
     const [params, setParams] = useState([])
     const ref = React.createRef()
+    console.log(ref)
 
     const handleChange = (event, newValue) => {
         setValue(newValue);

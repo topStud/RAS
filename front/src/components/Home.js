@@ -2,7 +2,7 @@ import '../style/App.css';
 import AppMenu from './Navbar.js'
 import AppBody from './AppBody.js'
 
-function App() {
+export default function Home() {
     return (
         <div className="App">
             <header className="App-header">
@@ -17,5 +17,3 @@ function App() {
         </div>
     );
 }
-
-export default App;

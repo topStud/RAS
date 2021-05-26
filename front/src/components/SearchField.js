@@ -112,7 +112,11 @@ export default class Tags extends React.Component {
                             filterOptions={this.filterOptions}
                             includeInputInList
                             options={this.state.subjectAreaList}
-                            onChange={this.onTagsChange}
+                            value={this.state.tags}
+                            onChange={(event, newValue) => {
+                                this.setState({tags: newValue})
+                                this.onTagsChange(event,newValue)
+                            }}
                             renderInput={(params) => (
                                 <TextField {...params} label="Subject area" variant="standard" placeholder={'Enter subject area here'}/>
                             )}
@@ -149,7 +153,11 @@ export default class Tags extends React.Component {
                         <Autocomplete
                             freeSolo
                             multiple
-                            onChange={this.onTagsChange}
+                            value={this.state.tags}
+                            onChange={(event, newValue) => {
+                                this.setState({tags: newValue})
+                                this.onTagsChange(event,newValue)
+                            }}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
