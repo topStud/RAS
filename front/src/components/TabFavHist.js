@@ -21,8 +21,8 @@ function TabPanel(props) {
             {...other}
         >
             {value === index && (
-                <Box p={2}>
-                    <Typography>{children}</Typography>
+                <Box div={2}>
+                    {children}
                 </Box>
             )}
         </div>

@@ -4,9 +4,6 @@ import AppMenu from './Navbar.js'
 export default function LogIn() {
     return (
         <div className="App">
-            <header className="App-header">
-                <AppMenu />
-            </header>
             <main className="App-body">
                 <h1>Hello this is a private page</h1>
             </main>

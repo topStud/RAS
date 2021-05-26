@@ -16,6 +16,7 @@ const useStyles = makeStyles((theme) => ({
     },
     root: {
         flexGrow: 1,
+        marginTop: '8%',
     },
     dialog: {
         width: '100%',

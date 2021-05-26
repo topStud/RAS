@@ -14,9 +14,9 @@ export default function ConfirmationDialogRaw(props) {
 
     // React.useEffect(() => {
     //     if (!open) {
-    //         setValue(valueProp);
+    //         setValue(value);
     //     }
-    // }, [valueProp, open]);
+    // }, [value, open]);
 
     const handleCancel = () => {
         onClose([]);
