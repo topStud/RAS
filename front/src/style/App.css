@@ -1,11 +1,16 @@
 .App {
-  min-height: 100vh;
+  /*min-height: 100vh;*/
   text-align: center;
   /* background-color: #e6e9fc; */
-  background-color: #e6e9fc;
+  /*background-color: #e6e9fc;*/
   color: white;
   font-size: calc(10px + 2vmin);
   margin:0;
+}
+
+body {
+  min-height: 100vh;
+  background-color: #e6e9fc!important;
 }
 
 .App-header {

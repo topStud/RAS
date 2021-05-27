@@ -36,5 +36,6 @@ button:focus {
     text-decoration-line: underline;
     float: left;
     margin-top: 10px;
-    font-size: 0.8em;
+    font-size: calc(15px + 1vmin);
+    min-font-size: 30px;
 }
