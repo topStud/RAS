@@ -1,5 +1,8 @@
 import '../style/App.css';
 import AppBody from './AppBody.js'
+import Copyright from "./Copyright";
+import Box from "@material-ui/core/Box";
+import React from "react";
 
 export default function Home() {
     return (
@@ -7,9 +10,9 @@ export default function Home() {
             <main className="App-body">
                 <AppBody />
             </main>
-            <footer className="App-footer">
-
-            </footer>
+            <Box mt={0} id={'footer'}>
+                <Copyright />
+            </Box>
         </div>
     );
 }

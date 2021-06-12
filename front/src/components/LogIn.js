@@ -10,6 +10,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import '../style/App.css'
+import Copyright from "./Copyright";
+import Box from "@material-ui/core/Box";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -34,30 +36,35 @@ const useStyles = makeStyles((theme) => ({
 export default function SignIn() {
     const [emailValue, setEmailValue] = React.useState('')
     const [passValue, setPassValue] = React.useState('')
-    const [emailError, setEmailVError] = React.useState(false)
+    const [emailError, setEmailError] = React.useState(false)
     const [passError, setPassError] = React.useState(false)
     const [emailMes, setEmailMes] = React.useState('')
-    const [passMes, passEmailMes] = React.useState('')
+    const [passMes, setPassMes] = React.useState('')
     const classes = useStyles();
+
 
     function logInClicked() {
         if (!ValidateEmail(emailValue) || passValue === '') {
-            if (!ValidateEmail(emailValue)) {
-                setEmailVError(true)
-                setEmailMes('wrong email format!')
+            if (emailValue === '') {
+                setEmailError(true)
+                setEmailMes('This field is required')
+            } else if (!ValidateEmail(emailValue)) {
+                setEmailError(true)
+                setEmailMes('The email entered is not in the correct format')
             }
             if (passValue === '') {
                 setPassError(true)
-                passEmailMes('please enter your password!')
+                setPassMes('This field is required')
             }
         } else {
             // removes the error annotation
-            setEmailVError(false)
+            setEmailError(false)
             setPassError(false)
             setEmailMes('')
-            passEmailMes('')
+            setPassMes('')
 
             let url = '/userInfo?email=' + emailValue + '&pass=' + passValue
+
             // sends values to server for a check.
             fetch(url).then(res => {
                 if (!res.ok) {
@@ -79,6 +86,16 @@ export default function SignIn() {
 
     function passChange(e) {
         setPassValue(e.target.value)
+    }
+
+    function removeErrorEmail() {
+        setEmailError(false)
+        setEmailMes('')
+    }
+
+    function removeErrorPass() {
+        setPassError(false)
+        setPassMes('')
     }
 
     return (
@@ -107,6 +124,7 @@ export default function SignIn() {
                             helperText={emailMes}
                             value={emailValue}
                             onChange={emailChange}
+                            onClick={removeErrorEmail}
                         />
                         <TextField
                             variant="outlined"
@@ -122,6 +140,7 @@ export default function SignIn() {
                             helperText={passMes}
                             value={passValue}
                             onChange={passChange}
+                            onClick={removeErrorPass}
                         />
                         <Button
                             fullWidth
@@ -139,7 +158,7 @@ export default function SignIn() {
                                 </Link>
                             </Grid>
                             <Grid item>
-                                <Link href="#" variant="body2">
+                                <Link href='/createAccount' variant="body2">
                                     {"Don't have an account? Sign Up"}
                                 </Link>
                             </Grid>
@@ -147,6 +166,9 @@ export default function SignIn() {
                     </form>
                 </div>
             </Container>
+            <Box mt={5}>
+                <Copyright />
+            </Box>
         </div>
     );
 }

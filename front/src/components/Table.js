@@ -243,7 +243,6 @@ function Row(props) {
                 selected.slice(selectedIndex + 1),
             );
         }
-
         setSelected(newSelected);
     };
     const isSelected = (name) => selected.indexOf(name) !== -1;

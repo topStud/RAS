@@ -24,3 +24,12 @@ body {
   margin-top: 10%;
   outline: none;
 }
+
+#pageContainer {
+  min-height: 100vh;
+  position: relative;
+}
+
+#footer {
+  padding-top: 20px;
+}
