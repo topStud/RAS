@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import LogIn from "./components/LogIn";
 import AppMenu from "./components/Navbar";
 import CreateAccount from "./components/CreateAccount"
+import ForgotPass from "./components/ForgotPass"
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
                   <Route path='/privatePage' component={PrivatePage}/>
                   <Route path='/logIn' component={LogIn}/>
                   <Route path='/createAccount' component={CreateAccount}/>
+                  <Route path='/forgotPass' component={ForgotPass}/>
               </Switch>
           </div>
       </Router>

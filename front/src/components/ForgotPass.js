@@ -12,6 +12,7 @@ import Container from '@material-ui/core/Container';
 import '../style/App.css'
 import Copyright from "./Copyright";
 import Box from "@material-ui/core/Box";
+import {Label} from "semantic-ui-react";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -35,16 +36,13 @@ const useStyles = makeStyles((theme) => ({
 
 export default function SignIn() {
     const [emailValue, setEmailValue] = React.useState('')
-    const [passValue, setPassValue] = React.useState('')
     const [emailError, setEmailError] = React.useState(false)
-    const [passError, setPassError] = React.useState(false)
     const [emailMes, setEmailMes] = React.useState('')
-    const [passMes, setPassMes] = React.useState('')
     const classes = useStyles();
 
 
     function logInClicked() {
-        if (!ValidateEmail(emailValue) || passValue === '') {
+        if (!ValidateEmail(emailValue)) {
             if (emailValue === '') {
                 setEmailError(true)
                 setEmailMes('This field is required')
@@ -52,18 +50,12 @@ export default function SignIn() {
                 setEmailError(true)
                 setEmailMes('The email entered is not in the correct format')
             }
-            if (passValue === '') {
-                setPassError(true)
-                setPassMes('This field is required')
-            }
         } else {
             // removes the error annotation
             setEmailError(false)
-            setPassError(false)
             setEmailMes('')
-            setPassMes('')
 
-            let url = '/userInfo?email=' + emailValue + '&pass=' + passValue
+            let url = '/forgot?email=' + emailValue
 
             // sends values to server for a check.
             fetch(url).then(res => {
@@ -72,7 +64,7 @@ export default function SignIn() {
                 }
                 return res.json()
             }).then(data => {
-              // data = user id
+                // data = user id
                 window.open("/uid="+data);
             }).catch(function (error) {
                 console.log(error);
@@ -84,18 +76,9 @@ export default function SignIn() {
         setEmailValue(e.target.value)
     }
 
-    function passChange(e) {
-        setPassValue(e.target.value)
-    }
-
     function removeErrorEmail() {
         setEmailError(false)
         setEmailMes('')
-    }
-
-    function removeErrorPass() {
-        setPassError(false)
-        setPassMes('')
     }
 
     return (
@@ -107,8 +90,13 @@ export default function SignIn() {
                         <LockOutlinedIcon />
                     </Avatar>
                     <Typography component="h1" variant="h5" color={'primary'}>
-                        Log in
+                        Forgot your password?
                     </Typography>
+                    <Box marginTop={4}>
+                        <Typography variant="subtitle1" gutterBottom component="div" color={'textSecondary'} style={{textAlign: 'left'}}>
+                            Tell us your email address, and we'll get you back on track in no time.
+                        </Typography>
+                    </Box>
                     <form className={classes.form} noValidate>
                         <TextField
                             variant="outlined"
@@ -126,22 +114,6 @@ export default function SignIn() {
                             onChange={emailChange}
                             onClick={removeErrorEmail}
                         />
-                        <TextField
-                            variant="outlined"
-                            margin="normal"
-                            required
-                            error={passError}
-                            fullWidth
-                            name="password"
-                            label="Password"
-                            type="password"
-                            id="password"
-                            autoComplete="current-password"
-                            helperText={passMes}
-                            value={passValue}
-                            onChange={passChange}
-                            onClick={removeErrorPass}
-                        />
                         <Button
                             fullWidth
                             variant="contained"
@@ -149,17 +121,14 @@ export default function SignIn() {
                             className={classes.submit}
                             onClick={() => logInClicked()}
                         >
-                            Log In
+                            Send password reset email
                         </Button>
                         <Grid container>
                             <Grid item xs>
-                                <Link href="/forgotPass" variant="body2">
-                                    Forgot password?
-                                </Link>
                             </Grid>
                             <Grid item>
-                                <Link href='/createAccount' variant="body2">
-                                    {"Don't have an account? Sign Up"}
+                                <Link href='/logIn' variant="body2">
+                                    {"Back to Sign in"}
                                 </Link>
                             </Grid>
                         </Grid>
