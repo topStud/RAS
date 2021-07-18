@@ -6,7 +6,7 @@ from flask_pymongo import PyMongo
 import sys
 from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from Model import DBModel
+from Model import journalsModel
 
 
 PORT = 5000
@@ -25,12 +25,12 @@ def index():
 
 @app.route('/journals_names/', methods=['GET'])
 def get_all_journals_names():
-    return jsonify(DBModel.get_all_journals_names()), 200
+    return jsonify(journalsModel.get_all_journals_names()), 200
 
 
 @app.route('/subject_areas/', methods=['GET'])
 def get_all_subject_areas():
-    return jsonify(DBModel.get_all_subject_areas()), 200
+    return jsonify(journalsModel.get_all_subject_areas()), 200
 
 
 @app.route('/data_by_names/<names_list>', methods=['GET'])
@@ -40,7 +40,7 @@ def get_data_by_name_list(names_list):
     data_list = []
     for name in names_list:
         # get the data of that journal
-        data_dict = DBModel.get_data_by_name(name)
+        data_dict = journalsModel.get_data_by_name(name)
         if data_dict == "error":
             continue
         data_list.append(data_dict)
@@ -56,7 +56,7 @@ def get_data_by_issn_list(issn_list):
     data_dict = {}  # journal name: dict of data
     for issn in issn_list:
         # get the data of that issn
-        dict = DBModel.get_data_by_issn(issn)
+        dict = journalsModel.get_data_by_issn(issn)
         if dict == "error":
             continue
         data_dict[dict['name']] = dict
