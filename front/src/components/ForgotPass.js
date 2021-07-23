@@ -12,7 +12,6 @@ import Container from '@material-ui/core/Container';
 import '../style/App.css'
 import Copyright from "./Copyright";
 import Box from "@material-ui/core/Box";
-import {Label} from "semantic-ui-react";
 
 const useStyles = makeStyles((theme) => ({
     paper: {
@@ -55,15 +54,28 @@ export default function SignIn() {
             setEmailError(false)
             setEmailMes('')
 
-            let url = '/forgot?email=' + emailValue
+            let url = '/emailReset'
 
             // sends values to server for a check.
-            fetch(url).then(res => {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({email: emailValue})
+            }).then(res => {
                 if (!res.ok) {
                     throw Error(res.statusText);
                 }
                 return res.json()
             }).then(data => {
+                // user does not exist with that email
+                if (data === -1) {
+
+                } else {
+
+                }
                 // data = user id
                 window.open("/uid="+data);
             }).catch(function (error) {
