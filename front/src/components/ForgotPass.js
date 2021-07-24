@@ -71,13 +71,11 @@ export default function SignIn() {
                 return res.json()
             }).then(data => {
                 // user does not exist with that email
-                if (data === -1) {
-
+                if (data === 404) {
+                    // email not found in DB
                 } else {
-
+                    // message that says an email was sent
                 }
-                // data = user id
-                window.open("/uid="+data);
             }).catch(function (error) {
                 console.log(error);
             });
