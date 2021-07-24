@@ -3,12 +3,6 @@ from flask import Flask, jsonify, redirect, url_for,request
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 
-import sys
-from os.path import dirname, join, abspath
-sys.path.insert(0, abspath(join(dirname(__file__), '..')))
-from Model import journalsModel, userModel
-
-
 PORT = 5000
 app = Flask(__name__, static_folder='../../Front-end')
 CORS(app)
@@ -17,12 +11,18 @@ app.config['MONGO_DBNAME'] = 'RAS_DB'
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/RAS_DB'
 mongo = PyMongo(app)
 
+import sys
+from os.path import dirname, join, abspath
+sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+from Model import journalsModel, userModel
+
 
 @app.route('/emailReset', methods=['POST'])
 def send_email():
     u_email = request.json.get('email')
-    if userModel.email_in_DB(u_email):
-        userModel.verification_email(u_email)
+    uid = userModel.email_in_DB(u_email)
+    if uid != -1:
+        userModel.verification_email(u_email, uid)
         return jsonify(200)
     else:
         return jsonify(404)

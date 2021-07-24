@@ -13,9 +13,10 @@ scopus = Scopus(key_1)
 
 from os.path import dirname, join, abspath
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+from app import mongo
 
 
-def verification_email(user_email):
+def verification_email(user_email, uid):
     sender_email = "ras.email.noreply@gmail.com"
     receiver_email = user_email
     password_h = "UkFTcGFzc3dvcmQ="
@@ -26,19 +27,19 @@ def verification_email(user_email):
     message["To"] = receiver_email
 
     # Create the plain-text and HTML version of your message
-    text = """\
+    text = f"""\
     Hi,
     How are you?
     It seems like you forgot your password. Don't worry about it!
     Follow the link to reset your password:
-    http://localhost:5000/resetPass"""
-    html = """\
+    http://localhost:3000/resetPass?uid={uid}"""
+    html = f"""\
     <html>
       <body>
         <p>Hi,<br>
            How are you?<br>
            It seems like you forgot your password. Don't worry about it!</br>
-           Follow the <a href="http://localhost:5000/resetPass">link</a> to reset your password.</br>
+           Follow the <a href="http://localhost:3000/resetPass?uid={uid}">link</a> to reset your password.</br>
         </p>
         <p>
             See you soon!
@@ -64,11 +65,18 @@ def verification_email(user_email):
 
 
 def email_in_DB(email):
-    return True
+    query = {"email": email}
+    users_collection = mongo.db.users
+    user = users_collection.find_one(query)
+    print(user['_id'])
+    if user is None:
+        return -1
+    else:
+        return user['_id']
 
 
 def get_publication_journals(first_name, last_name):
-    author_result_df = scopus.search_author("AUTHLASTNAME(" + last_name +") and AUTHFIRST(" + first_name + ")")
+    author_result_df = scopus.search_author("AUTHLASTNAME(" + last_name + ") and AUTHFIRST(" + first_name + ")")
     author_pub_df = scopus.search_author_publication(author_result_df['author_id'][0])
     journal_list = list(set(author_pub_df['publication_name']))
     return journal_list
