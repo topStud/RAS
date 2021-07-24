@@ -38,7 +38,7 @@ def verification_email(user_email):
         <p>Hi,<br>
            How are you?<br>
            It seems like you forgot your password. Don't worry about it!</br>
-           Follow the <a href="http://www.realpython.com">link</a> to reset your password.</br>
+           Follow the <a href="http://localhost:5000/resetPass">link</a> to reset your password.</br>
         </p>
         <p>
             See you soon!
